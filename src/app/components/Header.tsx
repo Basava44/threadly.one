@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/app/assets/logo.png";
 
@@ -13,6 +14,7 @@ const navLinks = [
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-sm border-b border-foreground/5">
@@ -37,16 +39,16 @@ export function Header() {
 
         {/* Icons */}
         <div className="flex items-center gap-4">
-          {/* Search */}
-          <button aria-label="Search" className="text-foreground/70 hover:text-foreground transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </button>
 
           {/* Account */}
-          <button aria-label="Account" className="text-foreground/70 hover:text-foreground transition-colors">
+          <button
+            aria-label="Account"
+            className="text-foreground/70 hover:text-foreground transition-colors"
+            onClick={() => {
+              const loggedIn = localStorage.getItem("threadly_logged_in") === "true";
+              router.push(loggedIn ? "/profile" : "/login");
+            }}
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
