@@ -58,7 +58,7 @@ export default function Home() {
             headline={"Your style.\nYour initials."}
             description="Premium oversized T-shirts customised just for you. Soft cotton, relaxed fit, personalised embroidery."
             ctaText="Shop T-Shirts"
-            ctaHref="#tees"
+            ctaHref="/customize?product=tee"
             badges={["Custom Embroidery", "Premium Cotton", "All Day Comfort", "Perfect Gift"]}
             image={heroTeesTotes}
             imageAlt="Custom embroidered oversized t-shirts and tote bags"
@@ -70,7 +70,7 @@ export default function Home() {
             headline={"Made Personal.\nMade for you."}
             description="Bucket hats with initials, hearts, and little things that matter. For you or someone special."
             ctaText="Shop Bucket Hats"
-            ctaHref="#caps"
+            ctaHref="/customize?product=cap"
             badges={["Personalised Embroidery", "Made for Special Moments", "All Day Comfort", "The Perfect Gift"]}
             image={heroBucketHats}
             imageAlt="Custom embroidered bucket hats for couples"
@@ -83,7 +83,7 @@ export default function Home() {
             headline={"Carry what\nmatters."}
             description="Custom embroidered tote bags for everyday, everywhere. Durable, spacious, and uniquely yours."
             ctaText="Shop Tote Bags"
-            ctaHref="#totes"
+            ctaHref="/customize?product=tote"
             badges={["Custom Embroidery", "Durable & Reusable", "Spacious & Practical", "Perfect Gift"]}
             image={lifestyleCollage}
             imageAlt="Custom embroidered bucket hats lifestyle"

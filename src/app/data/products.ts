@@ -14,6 +14,7 @@ export const howItWorks = [
 export const customizerColors = [
   { name: "Black", hex: "#1A1A1A" },
   { name: "Beige", hex: "#D4C5A9" },
+  { name: "Olive", hex: "#4A5D3A" },
 ];
 
 export const customizerProducts = ["cap", "tee", "tote"] as const;

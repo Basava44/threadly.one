@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "motion/react";
 import capsImg from "@/app/assets/product-hats-display.png";
 import teesImg from "@/app/assets/product-tee-dsiplay.png";
@@ -39,12 +40,12 @@ export function ProductCategories() {
                 <p className="text-xs text-foreground/50 mt-1">
                   Custom embroidery starting at ₹{cat.price}
                 </p>
-                <a
-                  href={`#${cat.slug}`}
+                <Link
+                  href={`/customize?product=${cat.slug === "caps" ? "cap" : cat.slug === "tees" ? "tee" : "tote"}`}
                   className="inline-block mt-4 px-5 py-2.5 bg-foreground text-cream text-[10px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
                 >
                   {cat.cta}
-                </a>
+                </Link>
               </div>
             </motion.div>
           ))}

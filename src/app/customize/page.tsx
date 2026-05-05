@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AnnouncementBar } from "../components/AnnouncementBar";
 import { Header } from "../components/Header";
 import { Customizer } from "../components/Customizer";
@@ -10,7 +11,9 @@ export default function CustomizePage() {
       <AnnouncementBar />
       <Header />
       <main>
-        <Customizer />
+        <Suspense>
+          <Customizer />
+        </Suspense>
       </main>
       <Footer />
     </PageTransition>

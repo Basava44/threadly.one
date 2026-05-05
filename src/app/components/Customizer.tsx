@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import {
   customizerColors,
@@ -8,6 +9,8 @@ import {
   productPrices,
   type CustomizerProduct,
 } from "@/app/data/products";
+import { addToCart, getCart, updateCartItem } from "@/app/data/cart";
+import { getTextColor, productSVGs } from "./ProductSVGs";
 import dynamic from "next/dynamic";
 
 const ProductViewer3D = dynamic(
@@ -15,62 +18,22 @@ const ProductViewer3D = dynamic(
   { ssr: false }
 );
 
-function getTextColor(bgHex: string) {
-  const r = parseInt(bgHex.slice(1, 3), 16);
-  const g = parseInt(bgHex.slice(3, 5), 16);
-  const b = parseInt(bgHex.slice(5, 7), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5 ? "#1A1A1A" : "#F5F0E8";
-}
-
-function CapSVG({ color, text, textColor }: { color: string; text: string; textColor: string }) {
-  return (
-    <svg viewBox="0 0 200 180" className="w-full max-w-[340px]">
-      <ellipse cx="100" cy="140" rx="85" ry="20" fill={color} opacity="0.3" />
-      <path d="M40 100 C40 55, 160 55, 160 100 L155 115 C155 120, 145 130, 100 130 C55 130, 45 120, 45 115 Z" fill={color} stroke={color} strokeWidth="1" />
-      <path d="M35 105 C35 105, 30 115, 35 120 C40 125, 55 132, 100 132 C145 132, 160 125, 165 120 C170 115, 165 105, 165 105" fill={color} stroke={color === "#1A1A1A" ? "#333" : "#00000015"} strokeWidth="0.5" />
-      <text x="100" y="98" textAnchor="middle" fill={textColor} fontSize="18" fontFamily="var(--font-geist-sans)" fontStyle="italic" fontWeight="300" letterSpacing="1">
-        {text || "A|K"}
-      </text>
-    </svg>
-  );
-}
-
-function TeeSVG({ color, text, textColor }: { color: string; text: string; textColor: string }) {
-  return (
-    <svg viewBox="0 0 200 220" className="w-full max-w-[340px]">
-      <ellipse cx="100" cy="200" rx="60" ry="10" fill={color} opacity="0.2" />
-      <path d="M70 40 L50 40 L25 70 L45 80 L55 65 L55 185 L145 185 L145 65 L155 80 L175 70 L150 40 L130 40 C130 40, 125 55, 100 55 C75 55, 70 40, 70 40 Z" fill={color} stroke={color === "#1A1A1A" ? "#333" : "#00000010"} strokeWidth="0.5" />
-      <text x="100" y="120" textAnchor="middle" fill={textColor} fontSize="16" fontFamily="var(--font-geist-sans)" fontStyle="italic" fontWeight="300" letterSpacing="1">
-        {text || "A|K"}
-      </text>
-    </svg>
-  );
-}
-
-function ToteSVG({ color, text, textColor }: { color: string; text: string; textColor: string }) {
-  return (
-    <svg viewBox="0 0 200 220" className="w-full max-w-[340px]">
-      <ellipse cx="100" cy="205" rx="55" ry="8" fill={color} opacity="0.2" />
-      <path d="M65 60 C65 30, 135 30, 135 60" fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" />
-      <rect x="45" y="60" width="110" height="140" rx="3" fill={color} stroke={color === "#1A1A1A" ? "#333" : "#00000010"} strokeWidth="0.5" />
-      <text x="100" y="140" textAnchor="middle" fill={textColor} fontSize="16" fontFamily="var(--font-geist-sans)" fontStyle="italic" fontWeight="300" letterSpacing="1">
-        {text || "R|S"}
-      </text>
-    </svg>
-  );
-}
-
 const productLabels: Record<CustomizerProduct, string> = {
   cap: "Bucket Cap",
   tee: "Oversized Tee",
   tote: "Tote Bag",
 };
 
-const productSVGs = { cap: CapSVG, tee: TeeSVG, tote: ToteSVG };
-
 export function Customizer() {
-  const [product, setProduct] = useState<CustomizerProduct>("cap");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const productParam = searchParams.get("product") as CustomizerProduct | null;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [product, setProduct] = useState<CustomizerProduct>(
+    productParam && ["cap", "tee", "tote"].includes(productParam) ? productParam : "cap"
+  );
+  const [size, setSize] = useState("M");
   const [productState, setProductState] = useState<
     Record<CustomizerProduct, { color: string; text: string }>
   >({
@@ -78,6 +41,21 @@ export function Customizer() {
     tee: { color: customizerColors[0].hex, text: "" },
     tote: { color: customizerColors[0].hex, text: "" },
   });
+
+  useEffect(() => {
+    if (editId) {
+      const cart = getCart();
+      const item = cart.find((i) => i.id === editId);
+      if (item) {
+        setProduct(item.product);
+        setSize(item.size || "M");
+        setProductState((prev) => ({
+          ...prev,
+          [item.product]: { color: item.color, text: item.text },
+        }));
+      }
+    }
+  }, [editId]);
 
   const color = productState[product].color;
   const text = productState[product].text;
@@ -204,6 +182,7 @@ export function Customizer() {
                 Your Initials / Text
               </label>
               <input
+                ref={inputRef}
                 type="text"
                 value={text}
                 onChange={(e) => setText(e.target.value.slice(0, 12))}
@@ -216,6 +195,31 @@ export function Customizer() {
               </span>
             </div>
 
+            {/* Size picker (tee only) */}
+            {product === "tee" && (
+              <div>
+                <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50 mb-3 block">
+                  Size
+                </label>
+                <div className="flex gap-2.5">
+                  {["S", "M", "L", "XL", "XXL"].map((s) => (
+                    <motion.button
+                      key={s}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSize(s)}
+                      className={`px-4 py-2.5 text-[11px] tracking-[0.1em] uppercase rounded-sm border transition-colors ${
+                        size === s
+                          ? "bg-foreground text-cream border-foreground"
+                          : "bg-transparent text-foreground/70 border-foreground/20 hover:border-foreground/40"
+                      }`}
+                    >
+                      {s}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Symbols */}
             <div>
               <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50 mb-3 block">
@@ -226,7 +230,11 @@ export function Customizer() {
                   <motion.button
                     key={symbol}
                     whileTap={{ scale: 0.85 }}
-                    onClick={() => setText((prev) => (prev + symbol).slice(0, 12))}
+                    onClick={() => {
+                      const pos = inputRef.current?.selectionStart ?? text.length;
+                      const newText = (text.slice(0, pos) + symbol + text.slice(pos)).slice(0, 12);
+                      setText(newText);
+                    }}
                     className="w-10 h-10 flex items-center justify-center text-sm text-foreground/60 border border-foreground/15 rounded-sm hover:border-foreground/40 hover:text-foreground transition-colors bg-cream"
                   >
                     {symbol}
@@ -239,9 +247,17 @@ export function Customizer() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                if (editId) {
+                  updateCartItem(editId, { product, color, text, size, price });
+                } else {
+                  addToCart({ product, color, text, size, quantity: 1, price });
+                }
+                router.push("/cart");
+              }}
               className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors mt-2"
             >
-              Add to Cart — ₹{price.toLocaleString("en-IN")}
+              {editId ? "Save Changes" : `Add to Cart — ₹${price.toLocaleString("en-IN")}`}
             </motion.button>
           </motion.div>
         </div>
