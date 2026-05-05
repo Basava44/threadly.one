@@ -460,7 +460,7 @@ export default function CartPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="flex flex-col sm:flex-row items-center gap-3"
+                  className="flex flex-col sm:flex-row justify-center items-center gap-3 "
                 >
                   <Link
                     href="/"
