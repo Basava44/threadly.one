@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
   customizerColors,
   customizerProducts,
   productPrices,
   type CustomizerProduct,
 } from "@/app/data/products";
+import dynamic from "next/dynamic";
+
+const ProductViewer3D = dynamic(
+  () => import("./ProductViewer3D").then((mod) => ({ default: mod.ProductViewer3D })),
+  { ssr: false }
+);
 
 function getTextColor(bgHex: string) {
   const r = parseInt(bgHex.slice(1, 3), 16);
@@ -65,8 +71,27 @@ const productSVGs = { cap: CapSVG, tee: TeeSVG, tote: ToteSVG };
 
 export function Customizer() {
   const [product, setProduct] = useState<CustomizerProduct>("cap");
-  const [color, setColor] = useState(customizerColors[0].hex);
-  const [text, setText] = useState("");
+  const [productState, setProductState] = useState<
+    Record<CustomizerProduct, { color: string; text: string }>
+  >({
+    cap: { color: customizerColors[0].hex, text: "" },
+    tee: { color: customizerColors[0].hex, text: "" },
+    tote: { color: customizerColors[0].hex, text: "" },
+  });
+
+  const color = productState[product].color;
+  const text = productState[product].text;
+
+  const setColor = (hex: string) =>
+    setProductState((prev) => ({ ...prev, [product]: { ...prev[product], color: hex } }));
+  const setText = (val: string | ((prev: string) => string)) =>
+    setProductState((prev) => ({
+      ...prev,
+      [product]: {
+        ...prev[product],
+        text: typeof val === "function" ? val(prev[product].text) : val,
+      },
+    }));
 
   const textColor = getTextColor(color);
   const price = productPrices[product];
@@ -74,7 +99,7 @@ export function Customizer() {
   const ProductSVG = productSVGs[product];
 
   return (
-    <section id="customise" className="min-h-[calc(100vh-4rem)] flex items-center bg-warm">
+    <section id="customise" className="min-h-[calc(100vh-4rem)] flex items-center bg-warm" suppressHydrationWarning>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 w-full">
         <motion.p
           initial={{ opacity: 0, y: -10 }}
@@ -102,24 +127,21 @@ export function Customizer() {
         </motion.p>
 
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16 max-w-5xl mx-auto">
-          {/* Preview */}
+          {/* 3D Preview */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="flex-1 flex items-center justify-center p-12 sm:p-16 bg-cream rounded-sm min-h-[380px] sm:min-h-[440px]"
+            className="flex-1 flex items-center justify-center bg-cream rounded-sm h-[440px] sm:h-[500px] w-full"
+            suppressHydrationWarning
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={product + color}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                <ProductSVG color={color} text={text} textColor={textColor} />
-              </motion.div>
-            </AnimatePresence>
+            <ProductViewer3D
+              product={product}
+              color={color}
+              text={text}
+              textColor={textColor}
+              enableZoom
+            />
           </motion.div>
 
           {/* Controls */}
