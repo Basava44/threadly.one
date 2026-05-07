@@ -6,6 +6,7 @@ const helpLinks = [
   { label: "Shipping & Orders", href: "/terms" },
   { label: "FAQs", href: "/#faq" },
   { label: "Contact Us", href: "#" },
+  { label: "Feedback", href: "/feedback" },
 ];
 
 const companyLinks = [

@@ -124,32 +124,85 @@ export default function CartPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setAuthLoading(false); return; }
 
-    const orderIds: string[] = [];
-    for (const item of cart) {
-      const oid = `TH${Math.floor(1000 + Math.random() * 9000)}`;
-      orderIds.push(oid);
-      await supabase.from("orders").insert({
-        order_id: oid,
-        user_id: user.id,
-        product: item.product,
-        color: item.color,
-        initials: item.text || "",
-        size: item.size || null,
-        quantity: item.quantity,
-        price: item.price,
-        status: "confirmed",
-        shipping_name: form.name,
-        shipping_phone: form.phone,
-        shipping_address: form.address,
-        shipping_city: form.city,
-        shipping_pincode: form.pincode,
-      });
+    // Create Razorpay order
+    const amountInPaise = Math.round(total * 100);
+    const res = await fetch("/api/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: amountInPaise, currency: "INR" }),
+    });
+
+    if (!res.ok) {
+      setSubmitErrors(["Failed to initiate payment. Please try again."]);
+      setAuthLoading(false);
+      return;
     }
 
+    const { order_id } = await res.json();
     setAuthLoading(false);
-    setOrderId(orderIds[0]);
-    clearCart();
-    setStep("done");
+
+    // Open Razorpay checkout modal
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: amountInPaise,
+      currency: "INR",
+      name: "threadly.one",
+      description: "Custom Embroidered Accessories",
+      order_id,
+      handler: async (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) => {
+        // Verify payment
+        const verifyRes = await fetch("/api/verify-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(response),
+        });
+
+        if (!verifyRes.ok) {
+          setSubmitErrors(["Payment verification failed. Contact support if amount was deducted."]);
+          return;
+        }
+
+        // Payment verified — save orders to Supabase
+        const orderIds: string[] = [];
+        for (const item of cart) {
+          const oid = `TH${Math.floor(1000 + Math.random() * 9000)}`;
+          orderIds.push(oid);
+          await supabase.from("orders").insert({
+            order_id: oid,
+            user_id: user.id,
+            product: item.product,
+            color: item.color,
+            initials: item.text || "",
+            size: item.size || null,
+            quantity: item.quantity,
+            price: item.price,
+            status: "confirmed",
+            payment_id: response.razorpay_payment_id,
+            shipping_name: form.name,
+            shipping_phone: form.phone,
+            shipping_address: form.address,
+            shipping_city: form.city,
+            shipping_pincode: form.pincode,
+          });
+        }
+
+        setOrderId(orderIds[0]);
+        clearCart();
+        setStep("done");
+      },
+      prefill: {
+        contact: form.phone,
+      },
+      theme: { color: "#1A1A1A" },
+      modal: {
+        ondismiss: () => {
+          setSubmitErrors(["Payment cancelled."]);
+        },
+      },
+    };
+
+    const rzp = new (window as unknown as { Razorpay: new (opts: typeof options) => { open: () => void } }).Razorpay(options);
+    rzp.open();
   };
 
   const getColorName = (hex: string) =>
@@ -526,7 +579,7 @@ export default function CartPage() {
                       whileTap={{ scale: 0.98 }}
                       className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
                     >
-                      Place Order — ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      Pay ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                     </motion.button>
                   </div>
                 </motion.form>
