@@ -30,6 +30,7 @@ export function Customizer() {
   const editId = searchParams.get("edit");
   const productParam = searchParams.get("product") as CustomizerProduct | null;
   const inputRef = useRef<HTMLInputElement>(null);
+  const cursorPosRef = useRef<number>(0);
   const [product, setProduct] = useState<CustomizerProduct>(
     productParam && ["cap", "tee", "tote"].includes(productParam) ? productParam : "cap"
   );
@@ -188,7 +189,8 @@ export function Customizer() {
                 ref={inputRef}
                 type="text"
                 value={text}
-                onChange={(e) => { setText(e.target.value.slice(0, 20)); setTextError(false); }}
+                onChange={(e) => { setText(e.target.value.slice(0, 20)); setTextError(false); cursorPosRef.current = e.target.selectionStart ?? 0; }}
+                onSelect={(e) => { cursorPosRef.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
                 placeholder="e.g. A|K"
                 maxLength={20}
                 className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-base placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
@@ -242,9 +244,16 @@ export function Customizer() {
                     key={symbol}
                     whileTap={{ scale: 0.85 }}
                     onClick={() => {
-                      const pos = inputRef.current?.selectionStart ?? text.length;
-                      const newText = (text.slice(0, pos) + symbol + text.slice(pos)).slice(0, 12);
+                      const pos = cursorPosRef.current;
+                      const newText = (text.slice(0, pos) + symbol + text.slice(pos)).slice(0, 20);
                       setText(newText);
+                      setTextError(false);
+                      const newPos = pos + symbol.length;
+                      cursorPosRef.current = newPos;
+                      setTimeout(() => {
+                        inputRef.current?.focus();
+                        inputRef.current?.setSelectionRange(newPos, newPos);
+                      }, 0);
                     }}
                     className="w-10 h-10 flex items-center justify-center text-sm text-foreground/60 border border-foreground/15 rounded-sm hover:border-foreground/40 hover:text-foreground transition-colors bg-cream"
                   >

@@ -27,6 +27,7 @@ export default function CartPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+  const [submitErrors, setSubmitErrors] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -34,7 +35,6 @@ export default function CartPage() {
   }, []);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const formValid = phoneVerified && form.name.trim().length > 0 && form.address.trim().length > 0 && form.city.trim().length > 0 && /^[0-9]{6}$/.test(form.pincode);
 
   const handleRemove = (id: string) => {
     removeFromCart(id);
@@ -101,9 +101,24 @@ export default function CartPage() {
     }
   };
 
+  const getFormErrors = () => {
+    const errors: string[] = [];
+    if (!form.name.trim()) errors.push("Name is required");
+    if (!phoneVerified) errors.push("Phone verification is required");
+    if (!form.address.trim()) errors.push("Address is required");
+    if (!form.city.trim()) errors.push("City is required");
+    if (!/^[0-9]{6}$/.test(form.pincode)) errors.push("Enter a valid 6-digit pincode");
+    return errors;
+  };
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phoneVerified) return;
+    const errors = getFormErrors();
+    if (errors.length > 0) {
+      setSubmitErrors(errors);
+      return;
+    }
+    setSubmitErrors([]);
     setAuthLoading(true);
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -480,11 +495,12 @@ export default function CartPage() {
                       <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50 mb-2 block">Pincode</label>
                       <input
                         type="text"
+                        inputMode="numeric"
                         required
                         value={form.pincode}
-                        onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                        onChange={(e) => setForm({ ...form, pincode: e.target.value.replace(/\D/g, "").slice(0, 6) })}
                         placeholder="6-digit pincode"
-                        pattern="[0-9]{6}"
+                        maxLength={6}
                         className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
                       />
                     </div>
@@ -497,16 +513,18 @@ export default function CartPage() {
                       <span className="font-medium">₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                     </div>
                     <p className="text-[9px] text-foreground/40 mb-4">Inclusive of all taxes</p>
+                    {submitErrors.length > 0 && (
+                      <div className="mb-3 flex flex-col gap-1">
+                        {submitErrors.map((err) => (
+                          <p key={err} className="text-[10px] text-red-500">{err}</p>
+                        ))}
+                      </div>
+                    )}
                     <motion.button
                       type="submit"
-                      whileHover={{ scale: formValid ? 1.02 : 1 }}
-                      whileTap={{ scale: formValid ? 0.98 : 1 }}
-                      disabled={!formValid}
-                      className={`w-full py-4 text-[12px] tracking-[0.15em] uppercase rounded-sm transition-colors ${
-                        formValid
-                          ? "bg-foreground text-cream hover:bg-accent-dark cursor-pointer"
-                          : "bg-foreground/30 text-cream/70 cursor-not-allowed"
-                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
                     >
                       Place Order — ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                     </motion.button>
