@@ -8,6 +8,7 @@ import logo from "@/app/assets/logo.png";
 
 const navLinks = [
   { label: "HOME", href: "/" },
+  { label: "PRODUCTS", href: "/products" },
   { label: "CUSTOMISE", href: "/customize" },
   { label: "TRACK ORDER", href: "/track" },
   { label: "ABOUT US", href: "/about" },
