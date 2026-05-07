@@ -154,6 +154,47 @@ export default function AdminPage() {
           />
         </div>
 
+        {/* Status Overview */}
+        {!loading && orders.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-3">
+            {statuses.map((s) => {
+              const count = orders.filter((o) => o.status === s).length;
+              return (
+                <div key={s} className="bg-cream border border-foreground/10 rounded-sm px-4 py-2.5 flex items-center gap-2">
+                  <span className="text-[10px] tracking-[0.1em] uppercase text-foreground/40">{s}</span>
+                  <span className="text-sm font-light">{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Product-wise Sales */}
+        {!loading && orders.length > 0 && (
+          <div className="mb-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {Object.entries(
+              orders.reduce<Record<string, { qty: number; revenue: number }>>((acc, o) => {
+                const key = o.product;
+                if (!acc[key]) acc[key] = { qty: 0, revenue: 0 };
+                acc[key].qty += o.quantity;
+                acc[key].revenue += o.price * o.quantity;
+                return acc;
+              }, {})
+            ).sort((a, b) => b[1].revenue - a[1].revenue).map(([product, data]) => (
+              <div key={product} className="bg-cream border border-foreground/10 rounded-sm p-4">
+                <p className="text-[10px] tracking-[0.1em] uppercase text-foreground/40 mb-1">{product}</p>
+                <p className="text-lg font-light">&#8377;{data.revenue.toLocaleString("en-IN")}</p>
+                <p className="text-[10px] text-foreground/40 mt-0.5">{data.qty} sold</p>
+              </div>
+            ))}
+            <div className="bg-foreground text-cream border border-foreground/10 rounded-sm p-4">
+              <p className="text-[10px] tracking-[0.1em] uppercase text-cream/50 mb-1">Total Revenue</p>
+              <p className="text-lg font-light">&#8377;{orders.reduce((sum, o) => sum + o.price * o.quantity, 0).toLocaleString("en-IN")}</p>
+              <p className="text-[10px] text-cream/50 mt-0.5">{orders.reduce((sum, o) => sum + o.quantity, 0)} items</p>
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
