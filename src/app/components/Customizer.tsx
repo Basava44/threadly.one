@@ -36,6 +36,7 @@ export function Customizer() {
   const [size, setSize] = useState("M");
   const [toast, setToast] = useState("");
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
+  const [textError, setTextError] = useState(false);
   const [productState, setProductState] = useState<
     Record<CustomizerProduct, { color: string; text: string }>
   >({
@@ -187,7 +188,7 @@ export function Customizer() {
                 ref={inputRef}
                 type="text"
                 value={text}
-                onChange={(e) => setText(e.target.value.slice(0, 20))}
+                onChange={(e) => { setText(e.target.value.slice(0, 20)); setTextError(false); }}
                 placeholder="e.g. A|K"
                 maxLength={20}
                 className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-base placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
@@ -254,14 +255,18 @@ export function Customizer() {
             </div>
 
             {/* CTA */}
-            {!text.trim() && (
+            {textError && (
               <p className="text-[10px] text-red-500/70 mt-1">Please add your initials or text before adding to cart.</p>
             )}
             <motion.button
-              whileHover={{ scale: text.trim() ? 1.02 : 1 }}
-              whileTap={{ scale: text.trim() ? 0.98 : 1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (!text.trim()) return;
+                if (!text.trim()) {
+                  setTextError(true);
+                  return;
+                }
+                setTextError(false);
                 if (editId) {
                   updateCartItem(editId, { product, color, text, size, price });
                   router.push("/cart");
@@ -271,11 +276,7 @@ export function Customizer() {
                   setTimeout(() => setToast(""), 3000);
                 }
               }}
-              className={`w-full py-4 text-[12px] tracking-[0.15em] uppercase rounded-sm transition-colors mt-2 ${
-                text.trim()
-                  ? "bg-foreground text-cream hover:bg-accent-dark cursor-pointer"
-                  : "bg-foreground/30 text-cream/70 cursor-not-allowed"
-              }`}
+              className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors mt-2"
             >
               {editId ? "Save Changes" : `Add to Cart — ₹${price.toLocaleString("en-IN")}`}
             </motion.button>
