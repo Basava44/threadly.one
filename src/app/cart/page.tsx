@@ -34,6 +34,7 @@ export default function CartPage() {
   }, []);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const formValid = phoneVerified && form.name.trim().length > 0 && form.address.trim().length > 0 && form.city.trim().length > 0 && /^[0-9]{6}$/.test(form.pincode);
 
   const handleRemove = (id: string) => {
     removeFromCart(id);
@@ -229,6 +230,7 @@ export default function CartPage() {
                                 {item.product === "tee" && (
                                   <div className="flex items-center gap-1.5 mt-2">
                                     <span className="text-[9px] tracking-[0.15em] uppercase text-foreground/40">Size:</span>
+
                                     {["S", "M", "L", "XL", "XXL"].map((s) => (
                                       <button
                                         key={s}
@@ -308,6 +310,7 @@ export default function CartPage() {
                         <p className="text-xl font-light">
                           ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                         </p>
+                        <p className="text-[9px] text-foreground/40 mt-0.5">Inclusive of all taxes</p>
                       </div>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -489,15 +492,21 @@ export default function CartPage() {
 
                   {/* Order summary */}
                   <div className="mt-4 pt-6 border-t border-foreground/10">
-                    <div className="flex justify-between text-sm mb-4">
+                    <div className="flex justify-between text-sm mb-1">
                       <span className="text-foreground/60">{cart.reduce((sum, i) => sum + i.quantity, 0)} item{cart.reduce((sum, i) => sum + i.quantity, 0) > 1 ? "s" : ""}</span>
                       <span className="font-medium">₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                     </div>
+                    <p className="text-[9px] text-foreground/40 mb-4">Inclusive of all taxes</p>
                     <motion.button
                       type="submit"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
+                      whileHover={{ scale: formValid ? 1.02 : 1 }}
+                      whileTap={{ scale: formValid ? 0.98 : 1 }}
+                      disabled={!formValid}
+                      className={`w-full py-4 text-[12px] tracking-[0.15em] uppercase rounded-sm transition-colors ${
+                        formValid
+                          ? "bg-foreground text-cream hover:bg-accent-dark cursor-pointer"
+                          : "bg-foreground/30 text-cream/70 cursor-not-allowed"
+                      }`}
                     >
                       Place Order — ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                     </motion.button>

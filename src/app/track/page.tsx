@@ -258,7 +258,10 @@ export default function TrackPage() {
                 </div>
 
                 {/* Status tracker */}
-                <div className="relative">
+                <div className="relative pl-5">
+                  {/* Vertical connector line */}
+                  <div className="absolute left-[24px] top-[40px] bottom-[40px] w-px bg-foreground/15" />
+
                   {statusSteps.map((step, i) => {
                     const isComplete = i <= currentStep;
                     const isCurrent = i === currentStep;
@@ -268,14 +271,14 @@ export default function TrackPage() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: i * 0.1 }}
-                        className="flex items-center gap-4 mb-6 last:mb-0"
+                        className="relative flex items-center gap-4 mb-8 last:mb-0"
                       >
                         {/* Icon circle */}
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                          className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                             isComplete
                               ? "bg-foreground text-cream"
-                              : "bg-foreground/5 text-foreground/30"
+                              : "bg-warm border border-foreground/15 text-foreground/30"
                           } ${isCurrent ? "ring-2 ring-foreground/20 ring-offset-2 ring-offset-warm" : ""}`}
                         >
                           {step.icon}
@@ -289,10 +292,6 @@ export default function TrackPage() {
                             <p className="text-[10px] text-foreground/50 mt-0.5">Current status</p>
                           )}
                         </div>
-                        {/* Connector line */}
-                        {i < statusSteps.length - 1 && (
-                          <div className="absolute left-5 w-px h-6 bg-foreground/10" style={{ top: `${i * 56 + 40}px` }} />
-                        )}
                       </motion.div>
                     );
                   })}

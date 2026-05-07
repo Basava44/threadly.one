@@ -35,6 +35,7 @@ export function Customizer() {
   );
   const [size, setSize] = useState("M");
   const [toast, setToast] = useState("");
+  const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [productState, setProductState] = useState<
     Record<CustomizerProduct, { color: string; text: string }>
   >({
@@ -199,9 +200,17 @@ export function Customizer() {
             {/* Size picker (tee only) */}
             {product === "tee" && (
               <div>
-                <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50 mb-3 block">
-                  Size
-                </label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50">
+                    Size
+                  </label>
+                  <button
+                    onClick={() => setSizeChartOpen(true)}
+                    className="text-[10px] tracking-[0.1em] uppercase text-foreground/50 underline underline-offset-2 hover:text-foreground transition-colors"
+                  >
+                    Size Chart
+                  </button>
+                </div>
                 <div className="flex gap-2.5">
                   {["S", "M", "L", "XL", "XXL"].map((s) => (
                     <motion.button
@@ -245,10 +254,14 @@ export function Customizer() {
             </div>
 
             {/* CTA */}
+            {!text.trim() && (
+              <p className="text-[10px] text-red-500/70 mt-1">Please add your initials or text before adding to cart.</p>
+            )}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: text.trim() ? 1.02 : 1 }}
+              whileTap={{ scale: text.trim() ? 0.98 : 1 }}
               onClick={() => {
+                if (!text.trim()) return;
                 if (editId) {
                   updateCartItem(editId, { product, color, text, size, price });
                   router.push("/cart");
@@ -258,13 +271,65 @@ export function Customizer() {
                   setTimeout(() => setToast(""), 3000);
                 }
               }}
-              className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors mt-2"
+              className={`w-full py-4 text-[12px] tracking-[0.15em] uppercase rounded-sm transition-colors mt-2 ${
+                text.trim()
+                  ? "bg-foreground text-cream hover:bg-accent-dark cursor-pointer"
+                  : "bg-foreground/30 text-cream/70 cursor-not-allowed"
+              }`}
             >
               {editId ? "Save Changes" : `Add to Cart — ₹${price.toLocaleString("en-IN")}`}
             </motion.button>
           </motion.div>
         </div>
       </div>
+      {/* Size Chart Modal */}
+      {sizeChartOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setSizeChartOpen(false)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-cream border border-foreground/10 rounded-sm p-6 sm:p-8 max-w-md w-full shadow-xl"
+          >
+            <button
+              onClick={() => setSizeChartOpen(false)}
+              className="absolute top-4 right-4 text-foreground/40 hover:text-foreground transition-colors text-lg"
+            >
+              &times;
+            </button>
+            <h3 className="text-lg font-light tracking-tight mb-1">Size Chart</h3>
+            <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mb-5">Oversized Fit (in cm)</p>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-foreground/10">
+                  <th className="text-left py-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Size</th>
+                  <th className="text-center py-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Chest</th>
+                  <th className="text-center py-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Length</th>
+                  <th className="text-center py-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Shoulder</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { size: "XS", chest: "106", length: "68", shoulder: "54" },
+                  { size: "S", chest: "112", length: "70", shoulder: "56" },
+                  { size: "M", chest: "118", length: "72", shoulder: "58" },
+                  { size: "L", chest: "124", length: "74", shoulder: "60" },
+                  { size: "XL", chest: "130", length: "76", shoulder: "62" },
+                ].map((row) => (
+                  <tr key={row.size} className="border-b border-foreground/5">
+                    <td className="py-2.5 font-medium">{row.size}</td>
+                    <td className="py-2.5 text-center text-foreground/70">{row.chest}</td>
+                    <td className="py-2.5 text-center text-foreground/70">{row.length}</td>
+                    <td className="py-2.5 text-center text-foreground/70">{row.shoulder}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-[9px] text-foreground/40 mt-4">Measurements may vary by 1-2 cm. Oversized fit — size down for a less relaxed look.</p>
+          </motion.div>
+        </div>
+      )}
+
       {/* Toast notification */}
       {toast && (
         <motion.div
