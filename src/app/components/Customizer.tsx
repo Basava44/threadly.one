@@ -272,6 +272,7 @@ export function Customizer() {
                   router.push("/cart");
                 } else {
                   addToCart({ product, color, text, size, quantity: 1, price });
+                  setText("");
                   setToast("Added to cart!");
                   setTimeout(() => setToast(""), 3000);
                 }
