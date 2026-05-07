@@ -91,7 +91,7 @@ export default function PrivacyPolicy() {
               </h2>
               <p>
                 If you have any questions about this privacy policy, reach out to us at{" "}
-                <a href="mailto:hello@threadly.one" className="underline underline-offset-2 hover:text-foreground transition-colors">
+                <a href="mailto:threadly.one@gmail.com" className="underline underline-offset-2 hover:text-foreground transition-colors">
                   threadly.one@gmail.com
                 </a>
               </p>

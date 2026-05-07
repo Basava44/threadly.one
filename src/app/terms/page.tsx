@@ -133,7 +133,7 @@ export default function Terms() {
               <p>
                 Questions about these terms? Reach out at{" "}
                 <a
-                  href="mailto:hello@threadly.one"
+                  href="mailto:threadly.one@gmail.com"
                   className="underline underline-offset-2 hover:text-foreground transition-colors"
                 >
                   threadly.one@gmail.com
