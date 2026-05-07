@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { Minus, Plus, Trash2, ArrowLeft, Check, Loader2 } from "lucide-react";
@@ -26,6 +26,8 @@ export default function CartPage() {
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setCart(getCart());
@@ -51,6 +53,20 @@ export default function CartPage() {
     setCart(getCart());
   };
 
+  const startResendTimer = () => {
+    setResendTimer(45);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   const handleSendOtp = async () => {
     if (!/^[0-9]{10}$/.test(form.phone)) return;
     setAuthLoading(true);
@@ -63,6 +79,7 @@ export default function CartPage() {
       setAuthError(error.message);
     } else {
       setOtpSent(true);
+      startResendTimer();
     }
   };
 
@@ -369,11 +386,12 @@ export default function CartPage() {
                         required
                         value={form.phone}
                         onChange={(e) => {
-                          setForm({ ...form, phone: e.target.value });
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                          setForm({ ...form, phone: val });
                           if (phoneVerified) { setPhoneVerified(false); setOtpSent(false); setOtp(""); }
                         }}
                         placeholder="10-digit mobile number"
-                        pattern="[0-9]{10}"
+                        maxLength={10}
                         disabled={phoneVerified}
                         className="flex-1 px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors disabled:opacity-50"
                       />
@@ -394,22 +412,32 @@ export default function CartPage() {
                       )}
                     </div>
                     {otpSent && !phoneVerified && (
-                      <div className="flex gap-2 mt-2">
-                        <input
-                          type="text"
-                          value={otp}
-                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                          placeholder="Enter 6-digit OTP"
-                          maxLength={6}
-                          className="flex-1 px-5 py-3 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
-                        />
+                      <div className="mt-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                            placeholder="Enter 6-digit OTP"
+                            maxLength={6}
+                            className="flex-1 px-5 py-3 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyOtp}
+                            disabled={authLoading}
+                            className="px-4 py-3 bg-foreground text-cream text-[10px] tracking-[0.1em] uppercase rounded-sm hover:bg-accent-dark transition-colors disabled:opacity-50"
+                          >
+                            {authLoading ? <Loader2 size={14} className="animate-spin" /> : "Verify"}
+                          </button>
+                        </div>
                         <button
                           type="button"
-                          onClick={handleVerifyOtp}
-                          disabled={authLoading}
-                          className="px-4 py-3 bg-foreground text-cream text-[10px] tracking-[0.1em] uppercase rounded-sm hover:bg-accent-dark transition-colors disabled:opacity-50"
+                          onClick={handleSendOtp}
+                          disabled={resendTimer > 0 || authLoading}
+                          className="text-[10px] text-foreground/50 hover:text-foreground mt-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
-                          {authLoading ? <Loader2 size={14} className="animate-spin" /> : "Verify"}
+                          {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : "Resend OTP"}
                         </button>
                       </div>
                     )}

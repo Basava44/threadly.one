@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { Search, Package, Scissors, Truck, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
@@ -40,9 +40,37 @@ export default function TrackPage() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const startResendTimer = () => {
+    setResendTimer(45);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleReset = () => {
+    setPhone("");
+    setOtp("");
+    setOtpSent(false);
+    setSearched(false);
+    setOrders([]);
+    setOrder(null);
+    setError("");
+    setResendTimer(0);
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!/^[0-9]{10}$/.test(phone)) return;
     setLoading(true);
     setError("");
@@ -54,6 +82,7 @@ export default function TrackPage() {
       setError(err.message);
     } else {
       setOtpSent(true);
+      startResendTimer();
     }
   };
 
@@ -124,9 +153,9 @@ export default function TrackPage() {
                     type="tel"
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     placeholder="10-digit mobile number"
-                    pattern="[0-9]{10}"
+                    maxLength={10}
                     className="flex-1 px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
                   />
                   <motion.button
@@ -165,6 +194,23 @@ export default function TrackPage() {
                   </motion.button>
                 </div>
                 {error && <p className="text-[10px] text-red-500">{error}</p>}
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleSendOtp()}
+                    disabled={resendTimer > 0 || loading}
+                    className="text-[10px] text-foreground/50 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : "Resend OTP"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-[10px] text-foreground/50 hover:text-foreground transition-colors"
+                  >
+                    Wrong number?
+                  </button>
+                </div>
               </form>
             ) : null}
 
@@ -270,7 +316,7 @@ export default function TrackPage() {
               </motion.div>
             )}
 
-            <div className="mt-12 pt-6 border-t border-foreground/10">
+            <div className="mt-12 pt-6 border-t border-foreground/10 flex items-center justify-between">
               <Link
                 href="/"
                 className="text-xs text-foreground/50 hover:text-foreground transition-colors flex items-center gap-1"
@@ -278,6 +324,14 @@ export default function TrackPage() {
                 <ArrowLeft size={14} strokeWidth={1.5} />
                 Back to home
               </Link>
+              {searched && (
+                <button
+                  onClick={handleReset}
+                  className="text-xs text-foreground/50 hover:text-foreground transition-colors"
+                >
+                  Check another number
+                </button>
+              )}
             </div>
           </motion.div>
         </div>

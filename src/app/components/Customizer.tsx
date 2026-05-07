@@ -34,6 +34,7 @@ export function Customizer() {
     productParam && ["cap", "tee", "tote"].includes(productParam) ? productParam : "cap"
   );
   const [size, setSize] = useState("M");
+  const [toast, setToast] = useState("");
   const [productState, setProductState] = useState<
     Record<CustomizerProduct, { color: string; text: string }>
   >({
@@ -250,10 +251,12 @@ export function Customizer() {
               onClick={() => {
                 if (editId) {
                   updateCartItem(editId, { product, color, text, size, price });
+                  router.push("/cart");
                 } else {
                   addToCart({ product, color, text, size, quantity: 1, price });
+                  setToast("Added to cart!");
+                  setTimeout(() => setToast(""), 3000);
                 }
-                router.push("/cart");
               }}
               className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors mt-2"
             >
@@ -262,6 +265,23 @@ export function Customizer() {
           </motion.div>
         </div>
       </div>
+      {/* Toast notification */}
+      {toast && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-foreground text-cream text-xs tracking-[0.1em] uppercase rounded-sm shadow-lg flex items-center gap-3"
+        >
+          {toast}
+          <button
+            onClick={() => router.push("/cart")}
+            className="underline underline-offset-2 text-cream/70 hover:text-cream transition-colors"
+          >
+            View Cart
+          </button>
+        </motion.div>
+      )}
     </section>
   );
 }
