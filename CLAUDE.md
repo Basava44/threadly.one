@@ -49,3 +49,6 @@ Tailwind v4 with `@theme inline` block in `src/app/globals.css`:
 ### Path Alias
 
 `@/*` maps to `./src/*` (configured in tsconfig.json).
+
+### Things to remember
+- Dont Commit and Push until it is said to do.
