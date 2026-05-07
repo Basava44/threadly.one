@@ -21,7 +21,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/">
-          <Image src={logo} alt="threadly.one" width={160} height={64} className="h-14 w-auto" priority />
+          <Image src={logo} alt="threadly.one" width={240} height={96} className="h-22 w-auto" priority />
         </Link>
 
         {/* Desktop Nav */}

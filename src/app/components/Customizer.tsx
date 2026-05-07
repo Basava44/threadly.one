@@ -185,13 +185,13 @@ export function Customizer() {
                 ref={inputRef}
                 type="text"
                 value={text}
-                onChange={(e) => setText(e.target.value.slice(0, 12))}
+                onChange={(e) => setText(e.target.value.slice(0, 20))}
                 placeholder="e.g. A|K"
-                maxLength={12}
+                maxLength={20}
                 className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-base placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
               />
               <span className="text-[9px] text-foreground/40 mt-1 block">
-                {text.length}/12 characters
+                {text.length}/20 characters
               </span>
             </div>
 

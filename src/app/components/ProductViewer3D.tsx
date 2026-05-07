@@ -159,8 +159,8 @@ export function ProductViewer3D({
         enableZoom={enableZoom}
         minDistance={2}
         maxDistance={5}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 1.5}
+        minPolarAngle={Math.PI / 2}
+        maxPolarAngle={Math.PI / 2}
       />
     </Canvas>
   );

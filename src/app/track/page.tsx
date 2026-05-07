@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { Search, Package, Scissors, Truck, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Search, Package, Scissors, Truck, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import { supabase } from "@/lib/supabase";
 
 type OrderStatus = "confirmed" | "crafting" | "shipped" | "delivered";
 
@@ -32,19 +33,71 @@ const statusIndex: Record<OrderStatus, number> = {
 
 export default function TrackPage() {
   const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [orders, setOrders] = useState<OrderResult[]>([]);
   const [order, setOrder] = useState<OrderResult | null>(null);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Dummy order data for now
-    setOrder({
-      id: "TH-M4X7K9",
-      status: "crafting",
-      items: ["Bucket Cap — Black — \"A|K\"", "Oversized Tee (M) — Olive — \"VIBES\""],
-      date: "3 May 2026",
+    if (!/^[0-9]{10}$/.test(phone)) return;
+    setLoading(true);
+    setError("");
+    const { error: err } = await supabase.auth.signInWithOtp({
+      phone: "+91" + phone,
     });
+    setLoading(false);
+    if (err) {
+      setError(err.message);
+    } else {
+      setOtpSent(true);
+    }
+  };
+
+  const handleVerifyAndFetch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp.length !== 6) return;
+    setLoading(true);
+    setError("");
+    const { error: err } = await supabase.auth.verifyOtp({
+      phone: "+91" + phone,
+      token: otp,
+      type: "sms",
+    });
+    if (err) {
+      setLoading(false);
+      setError(err.message);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    setLoading(false);
     setSearched(true);
+
+    if (data && data.length > 0) {
+      const mapped: OrderResult[] = data.map((row) => ({
+        id: row.order_id,
+        status: row.status as OrderStatus,
+        items: [`${row.product} — ${row.color} — "${row.initials}"`],
+        date: new Date(row.created_at).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }),
+      }));
+      setOrders(mapped);
+      setOrder(mapped[0]);
+    } else {
+      setOrders([]);
+      setOrder(null);
+    }
   };
 
   const currentStep = order ? statusIndex[order.status] : -1;
@@ -64,26 +117,56 @@ export default function TrackPage() {
               Enter the phone number you used while placing the order.
             </p>
 
-            <form onSubmit={handleSearch} className="flex gap-3 mb-12">
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="10-digit mobile number"
-                pattern="[0-9]{10}"
-                className="flex-1 px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
-              />
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-6 py-3.5 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors flex items-center gap-2"
-              >
-                <Search size={14} strokeWidth={1.5} />
-                Track
-              </motion.button>
-            </form>
+            {!otpSent ? (
+              <form onSubmit={handleSendOtp} className="flex flex-col gap-3 mb-12">
+                <div className="flex gap-3">
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="10-digit mobile number"
+                    pattern="[0-9]{10}"
+                    className="flex-1 px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+                  />
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-6 py-3.5 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <><Search size={14} strokeWidth={1.5} />Send OTP</>}
+                  </motion.button>
+                </div>
+                {error && <p className="text-[10px] text-red-500">{error}</p>}
+              </form>
+            ) : !searched ? (
+              <form onSubmit={handleVerifyAndFetch} className="flex flex-col gap-3 mb-12">
+                <p className="text-xs text-foreground/50">OTP sent to +91{phone}</p>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    required
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="Enter 6-digit OTP"
+                    maxLength={6}
+                    className="flex-1 px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+                  />
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-6 py-3.5 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : "Verify & Track"}
+                  </motion.button>
+                </div>
+                {error && <p className="text-[10px] text-red-500">{error}</p>}
+              </form>
+            ) : null}
 
             {searched && order && (
               <motion.div
@@ -91,6 +174,25 @@ export default function TrackPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
               >
+                {/* Order selector */}
+                {orders.length > 1 && (
+                  <div className="flex gap-2 mb-6 flex-wrap">
+                    {orders.map((o) => (
+                      <button
+                        key={o.id}
+                        onClick={() => setOrder(o)}
+                        className={`px-3 py-1.5 text-[10px] tracking-[0.1em] uppercase rounded-sm border transition-colors ${
+                          order.id === o.id
+                            ? "bg-foreground text-cream border-foreground"
+                            : "border-foreground/15 text-foreground/60 hover:border-foreground/40"
+                        }`}
+                      >
+                        {o.id}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 {/* Order info */}
                 <div className="bg-cream border border-foreground/8 rounded-sm p-5 mb-8">
                   <div className="flex items-center justify-between mb-3">

@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { Minus, Plus, Trash2, ArrowLeft, Check } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { CartItem, getCart, removeFromCart, updateCartItem, clearCart } from "../data/cart";
 import { customizerColors } from "../data/products";
+import { supabase } from "@/lib/supabase";
 
 const productLabels: Record<string, string> = {
   cap: "Bucket Cap",
@@ -23,6 +24,8 @@ export default function CartPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [phoneVerified, setPhoneVerified] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
 
   useEffect(() => {
     setCart(getCart());
@@ -48,11 +51,70 @@ export default function CartPage() {
     setCart(getCart());
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handleSendOtp = async () => {
+    if (!/^[0-9]{10}$/.test(form.phone)) return;
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: "+91" + form.phone,
+    });
+    setAuthLoading(false);
+    if (error) {
+      setAuthError(error.message);
+    } else {
+      setOtpSent(true);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) return;
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.verifyOtp({
+      phone: "+91" + form.phone,
+      token: otp,
+      type: "sms",
+    });
+    setAuthLoading(false);
+    if (error) {
+      setAuthError(error.message);
+    } else {
+      setPhoneVerified(true);
+    }
+  };
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phoneVerified) return;
-    const id = "TH-" + Date.now().toString(36).toUpperCase();
-    setOrderId(id);
+    setAuthLoading(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setAuthLoading(false); return; }
+
+    const orderIds: string[] = [];
+    for (const item of cart) {
+      const oid = `TH${Math.floor(1000 + Math.random() * 9000)}`;
+      orderIds.push(oid);
+      await supabase.from("orders").insert({
+        order_id: oid,
+        user_id: user.id,
+        product: item.product,
+        color: item.color,
+        initials: item.text || "",
+        size: item.size || null,
+        quantity: item.quantity,
+        price: item.price,
+        status: "confirmed",
+        shipping_name: form.name,
+        shipping_phone: form.phone,
+        shipping_address: form.address,
+        shipping_city: form.city,
+        shipping_pincode: form.pincode,
+      });
+    }
+
+    setAuthLoading(false);
+    setOrderId(orderIds[0]);
     clearCart();
     setStep("done");
   };
@@ -318,12 +380,11 @@ export default function CartPage() {
                       {!phoneVerified && !otpSent && (
                         <button
                           type="button"
-                          onClick={() => {
-                            if (/^[0-9]{10}$/.test(form.phone)) setOtpSent(true);
-                          }}
-                          className="px-4 py-3.5 bg-foreground text-cream text-[10px] tracking-[0.1em] uppercase rounded-sm hover:bg-accent-dark transition-colors whitespace-nowrap"
+                          onClick={handleSendOtp}
+                          disabled={authLoading}
+                          className="px-4 py-3.5 bg-foreground text-cream text-[10px] tracking-[0.1em] uppercase rounded-sm hover:bg-accent-dark transition-colors whitespace-nowrap disabled:opacity-50"
                         >
-                          Send OTP
+                          {authLoading ? <Loader2 size={14} className="animate-spin" /> : "Send OTP"}
                         </button>
                       )}
                       {phoneVerified && (
@@ -344,18 +405,20 @@ export default function CartPage() {
                         />
                         <button
                           type="button"
-                          onClick={() => {
-                            if (otp.length === 6) setPhoneVerified(true);
-                          }}
-                          className="px-4 py-3 bg-foreground text-cream text-[10px] tracking-[0.1em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
+                          onClick={handleVerifyOtp}
+                          disabled={authLoading}
+                          className="px-4 py-3 bg-foreground text-cream text-[10px] tracking-[0.1em] uppercase rounded-sm hover:bg-accent-dark transition-colors disabled:opacity-50"
                         >
-                          Verify
+                          {authLoading ? <Loader2 size={14} className="animate-spin" /> : "Verify"}
                         </button>
                       </div>
                     )}
                     <span className="text-[9px] text-foreground/40 mt-1 block">
                       {phoneVerified ? "Phone verified" : "We\u2019ll send order updates here"}
                     </span>
+                    {authError && (
+                      <span className="text-[10px] text-red-500 mt-1 block">{authError}</span>
+                    )}
                   </div>
 
                   <div>
