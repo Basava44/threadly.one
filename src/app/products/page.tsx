@@ -2,8 +2,11 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
+import { ArrowRight, Check } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Particles } from "@/components/magicui/particles";
 
 const products = [
   {
@@ -19,6 +22,7 @@ const products = [
       "One size fits most (adjustable inner band)",
       "Available in Black, Beige, and Olive",
     ],
+    highlight: "Most Popular",
   },
   {
     name: "Oversized Tee",
@@ -34,6 +38,7 @@ const products = [
       "Sizes: XS to XL",
       "Available in Black, Beige, and Olive",
     ],
+    highlight: "Best Seller",
   },
   {
     name: "Tote Bag",
@@ -49,6 +54,7 @@ const products = [
       "Dimensions: 38cm x 42cm x 12cm",
       "Available in Black, Beige, and Olive",
     ],
+    highlight: "Great Value",
   },
 ];
 
@@ -57,56 +63,70 @@ export default function ProductsPage() {
     <>
       <Header />
       <main className="min-h-[calc(100vh-4rem)] bg-warm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/40 text-center mb-2">
-              What we make
-            </p>
-            <h1 className="text-3xl sm:text-4xl font-light tracking-tight text-center mb-4">
-              Our Products
-            </h1>
-            <p className="text-sm text-foreground/50 text-center mb-16 max-w-md mx-auto">
-              Each piece is made to order with premium materials and custom embroidery — just for you.
-            </p>
-          </motion.div>
+        {/* Hero */}
+        <section className="relative overflow-hidden py-20 sm:py-24">
+          <Particles className="opacity-[0.02]" quantity={15} />
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
+            <BlurFade>
+              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/35 mb-3">
+                What we make
+              </p>
+            </BlurFade>
+            <BlurFade delay={0.1}>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight mb-5">
+                Our Products
+              </h1>
+            </BlurFade>
+            <BlurFade delay={0.2}>
+              <p className="text-base text-foreground/45 max-w-md mx-auto leading-relaxed">
+                Each piece is made to order with premium materials and custom embroidery — just for you.
+              </p>
+            </BlurFade>
+          </div>
+        </section>
 
-          <div className="flex flex-col gap-12">
+        {/* Products */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+          <div className="flex flex-col gap-6">
             {products.map((product, i) => (
               <motion.div
                 key={product.slug}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="bg-cream border border-foreground/8 rounded-sm p-6 sm:p-8"
+                transition={{ duration: 0.5, delay: i * 0.1, ease: [0.33, 1, 0.68, 1] }}
+                className="group bg-cream border border-foreground/8 rounded-lg p-7 sm:p-9 hover:border-foreground/15 hover:shadow-md transition-all duration-500"
               >
-                <div className="flex items-start justify-between mb-4">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-5">
                   <div>
-                    <h2 className="text-xl font-light tracking-tight">{product.name}</h2>
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mt-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h2 className="text-xl sm:text-2xl font-light tracking-tight">{product.name}</h2>
+                      <span className="text-[9px] tracking-[0.15em] uppercase text-foreground/50 px-2.5 py-1 bg-warm rounded-full border border-foreground/8">
+                        {product.highlight}
+                      </span>
+                    </div>
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/35">
                       Starting at
                     </p>
                   </div>
-                  <p className="text-lg font-light">
+                  <p className="text-2xl font-light text-foreground/80">
                     &#8377;{product.price.toLocaleString("en-IN")}
                   </p>
                 </div>
 
-                <p className="text-sm text-foreground/70 leading-relaxed mb-6">
+                <p className="text-sm text-foreground/60 leading-relaxed mb-7">
                   {product.description}
                 </p>
 
-                <div className="mb-6">
-                  <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mb-3">
-                    Details
+                {/* Details */}
+                <div className="mb-7">
+                  <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/35 mb-4">
+                    What&apos;s included
                   </p>
-                  <ul className="flex flex-col gap-1.5">
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {product.details.map((detail, j) => (
-                      <li key={j} className="text-xs text-foreground/60 flex items-start gap-2">
-                        <span className="w-1 h-1 rounded-full bg-foreground/30 mt-1.5 shrink-0" />
+                      <li key={j} className="text-xs text-foreground/55 flex items-start gap-2.5">
+                        <Check size={13} strokeWidth={2} className="text-foreground/30 mt-0.5 shrink-0" />
                         {detail}
                       </li>
                     ))}
@@ -115,9 +135,10 @@ export default function ProductsPage() {
 
                 <Link
                   href={`/customize?product=${product.slug}`}
-                  className="inline-block px-6 py-3 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
+                  className="group/btn inline-flex items-center gap-2 px-7 py-3.5 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-all duration-300"
                 >
                   Customise {product.name}
+                  <ArrowRight size={14} strokeWidth={1.5} className="group-hover/btn:translate-x-1 transition-transform duration-200" />
                 </Link>
               </motion.div>
             ))}

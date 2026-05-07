@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, MessageSquare, ArrowLeft } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 
@@ -44,26 +44,26 @@ export default function FeedbackPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
               className="text-center py-20"
             >
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-                className="w-16 h-16 mx-auto mb-6 rounded-full bg-foreground/5 flex items-center justify-center"
+                className="w-16 h-16 mx-auto mb-6 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center"
               >
                 <Check size={28} strokeWidth={1.5} className="text-foreground/70" />
               </motion.div>
-              <h1 className="text-2xl sm:text-3xl font-light tracking-tight mb-2">
+              <h1 className="text-2xl sm:text-3xl font-light tracking-tight mb-3">
                 Thank you!
               </h1>
-              <p className="text-sm text-foreground/50 mb-6">
-                Your feedback has been sent. We appreciate it.
+              <p className="text-sm text-foreground/45 mb-8 max-w-sm mx-auto">
+                Your feedback has been sent. We appreciate you taking the time to share your thoughts.
               </p>
               <Link
                 href="/"
-                className="inline-block px-8 py-3 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-all duration-300"
               >
                 Back to Home
               </Link>
@@ -72,76 +72,96 @@ export default function FeedbackPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
             >
-              <h1 className="text-2xl sm:text-3xl font-light tracking-tight mb-2">
-                Feedback
-              </h1>
-              <p className="text-sm text-foreground/50 mb-10">
-                We&apos;d love to hear from you.
-              </p>
-
-              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                <div>
-                  <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50 mb-2 block">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Your name"
-                    className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
-                  />
+              {/* Header */}
+              <div className="mb-10">
+                <div className="w-12 h-12 rounded-full bg-cream border border-foreground/10 flex items-center justify-center mb-5">
+                  <MessageSquare size={20} strokeWidth={1.5} className="text-foreground/50" />
                 </div>
+                <h1 className="text-2xl sm:text-3xl font-light tracking-tight mb-2">
+                  Feedback
+                </h1>
+                <p className="text-sm text-foreground/45">
+                  We&apos;d love to hear from you. Your thoughts help us improve.
+                </p>
+              </div>
 
-                <div>
-                  <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50 mb-2 block">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="your@email.com"
-                    className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
-                  />
-                </div>
+              <form onSubmit={handleSubmit} className="bg-cream border border-foreground/10 rounded-lg p-6 sm:p-8">
+                <div className="flex flex-col gap-6">
+                  <div>
+                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-2.5 block">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      placeholder="Your name"
+                      className="w-full px-5 py-3.5 bg-warm border border-foreground/10 rounded-sm text-sm placeholder:text-foreground/25 focus:outline-none focus:border-foreground/30 transition-colors"
+                    />
+                  </div>
 
-                <div>
-                  <label className="text-[11px] tracking-[0.2em] uppercase text-foreground/50 mb-2 block">
-                    Message
-                  </label>
-                  <textarea
-                    required
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    placeholder="Your feedback..."
-                    rows={5}
-                    className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors resize-none"
-                  />
-                </div>
+                  <div>
+                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-2.5 block">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="your@email.com"
+                      className="w-full px-5 py-3.5 bg-warm border border-foreground/10 rounded-sm text-sm placeholder:text-foreground/25 focus:outline-none focus:border-foreground/30 transition-colors"
+                    />
+                  </div>
 
-                {error && (
-                  <p className="text-[11px] text-red-500">{error}</p>
-                )}
+                  <div>
+                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-2.5 block">
+                      Message
+                    </label>
+                    <textarea
+                      required
+                      value={form.message}
+                      onChange={(e) => setForm({ ...form, message: e.target.value })}
+                      placeholder="Tell us what's on your mind..."
+                      rows={5}
+                      className="w-full px-5 py-3.5 bg-warm border border-foreground/10 rounded-sm text-sm placeholder:text-foreground/25 focus:outline-none focus:border-foreground/30 transition-colors resize-none"
+                    />
+                  </div>
 
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors disabled:opacity-50"
-                >
-                  {loading ? (
-                    <Loader2 size={16} className="animate-spin mx-auto" />
-                  ) : (
-                    "Send Feedback"
+                  {error && (
+                    <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-sm">
+                      <p className="text-[11px] text-red-600">{error}</p>
+                    </div>
                   )}
-                </motion.button>
+
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="w-full py-4 bg-foreground text-cream text-[12px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-all duration-300 disabled:opacity-40"
+                  >
+                    {loading ? (
+                      <Loader2 size={16} className="animate-spin mx-auto" />
+                    ) : (
+                      "Send Feedback"
+                    )}
+                  </motion.button>
+                </div>
               </form>
+
+              <div className="mt-8 pt-6 border-t border-foreground/8">
+                <Link
+                  href="/"
+                  className="text-xs text-foreground/45 hover:text-foreground transition-colors flex items-center gap-1.5 group"
+                >
+                  <ArrowLeft size={14} strokeWidth={1.5} className="group-hover:-translate-x-0.5 transition-transform" />
+                  Back to home
+                </Link>
+              </div>
             </motion.div>
           )}
         </div>
