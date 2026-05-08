@@ -58,7 +58,7 @@ export default function FeedbackPage() {
               <h1 className="text-2xl sm:text-3xl font-light tracking-tight mb-3">
                 Thank you!
               </h1>
-              <p className="text-sm text-foreground/45 mb-8 max-w-sm mx-auto">
+              <p className="text-sm text-foreground/60 mb-8 max-w-sm mx-auto">
                 Your feedback has been sent. We appreciate you taking the time to share your thoughts.
               </p>
               <Link
@@ -82,7 +82,7 @@ export default function FeedbackPage() {
                 <h1 className="text-2xl sm:text-3xl font-light tracking-tight mb-2">
                   Feedback
                 </h1>
-                <p className="text-sm text-foreground/45">
+                <p className="text-sm text-foreground/60">
                   We&apos;d love to hear from you. Your thoughts help us improve.
                 </p>
               </div>
@@ -90,7 +90,7 @@ export default function FeedbackPage() {
               <form onSubmit={handleSubmit} className="bg-cream border border-foreground/10 rounded-lg p-6 sm:p-8">
                 <div className="flex flex-col gap-6">
                   <div>
-                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-2.5 block">
+                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-2.5 block">
                       Name
                     </label>
                     <input
@@ -104,7 +104,7 @@ export default function FeedbackPage() {
                   </div>
 
                   <div>
-                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-2.5 block">
+                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-2.5 block">
                       Email
                     </label>
                     <input
@@ -118,7 +118,7 @@ export default function FeedbackPage() {
                   </div>
 
                   <div>
-                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-2.5 block">
+                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-2.5 block">
                       Message
                     </label>
                     <textarea
@@ -156,7 +156,7 @@ export default function FeedbackPage() {
               <div className="mt-8 pt-6 border-t border-foreground/8">
                 <Link
                   href="/"
-                  className="text-xs text-foreground/45 hover:text-foreground transition-colors flex items-center gap-1.5 group"
+                  className="text-xs text-foreground/60 hover:text-foreground transition-colors flex items-center gap-1.5 group"
                 >
                   <ArrowLeft size={14} strokeWidth={1.5} className="group-hover:-translate-x-0.5 transition-transform" />
                   Back to home

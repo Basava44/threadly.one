@@ -29,7 +29,7 @@ export function Hero() {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
-              className="text-[10px] tracking-[0.4em] uppercase text-foreground/40 mb-5"
+              className="text-[10px] tracking-[0.4em] uppercase text-foreground/55 mb-5"
             >
               Made for you. Made to last.
             </motion.p>
@@ -88,7 +88,7 @@ export function Hero() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.7 + i * 0.08 }}
-                  className="flex items-center gap-2 text-foreground/40 hover:text-foreground/60 transition-colors duration-300"
+                  className="flex items-center gap-2 text-foreground/55 hover:text-foreground/60 transition-colors duration-300"
                 >
                   {badgeIcons[i]}
                   <span className="text-[10px] tracking-[0.1em] uppercase">

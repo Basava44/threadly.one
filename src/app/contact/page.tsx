@@ -20,7 +20,7 @@ export default function Contact() {
           <Particles className="opacity-[0.025]" quantity={25} />
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 text-center relative z-10">
             <BlurFade delay={0}>
-              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/35 mb-5">
+              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-5">
                 Get In Touch
               </p>
             </BlurFade>
@@ -31,7 +31,7 @@ export default function Contact() {
               </h1>
             </BlurFade>
             <BlurFade delay={0.25}>
-              <p className="text-lg text-foreground/45 font-light">
+              <p className="text-lg text-foreground/60 font-light">
                 Questions, custom orders, or just want to say hi — reach out anytime.
               </p>
             </BlurFade>
@@ -44,7 +44,7 @@ export default function Contact() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 sm:gap-8">
               <BlurFade delay={0}>
                 <div className="text-center group">
-                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/30 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
+                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/45 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
                     <Phone size={20} />
                   </div>
                   <h3 className="text-xs tracking-[0.15em] uppercase text-foreground/80 font-medium mb-3">
@@ -63,7 +63,7 @@ export default function Contact() {
 
               <BlurFade delay={0.1}>
                 <div className="text-center group">
-                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/30 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
+                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/45 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
                     <Mail size={20} />
                   </div>
                   <h3 className="text-xs tracking-[0.15em] uppercase text-foreground/80 font-medium mb-3">
@@ -77,7 +77,7 @@ export default function Contact() {
 
               <BlurFade delay={0.2}>
                 <div className="text-center group">
-                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/30 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
+                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/45 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
                     <MessageCircle size={20} />
                   </div>
                   <h3 className="text-xs tracking-[0.15em] uppercase text-foreground/80 font-medium mb-3">
@@ -106,7 +106,7 @@ export default function Contact() {
 
               <BlurFade delay={0.3}>
                 <div className="text-center group">
-                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/30 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
+                  <div className="w-14 h-14 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/45 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
                     <MessageSquare size={20} />
                   </div>
                   <h3 className="text-xs tracking-[0.15em] uppercase text-foreground/80 font-medium mb-3">

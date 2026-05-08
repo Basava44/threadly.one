@@ -23,7 +23,7 @@ function ReviewCard({ name, text, rating }: { name: string; text: string; rating
         ))}
       </div>
       <p className="text-sm text-foreground/65 leading-relaxed mb-3">&ldquo;{text}&rdquo;</p>
-      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40">{name}</p>
+      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55">{name}</p>
     </div>
   );
 }
@@ -44,7 +44,7 @@ export function SocialProof() {
             <div className="text-2xl sm:text-3xl font-light tracking-tight">
               <NumberTicker value={500} suffix="+" />
             </div>
-            <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mt-1">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55 mt-1">
               Happy customers
             </p>
           </div>
@@ -52,7 +52,7 @@ export function SocialProof() {
             <div className="text-2xl sm:text-3xl font-light tracking-tight">
               <NumberTicker value={1200} suffix="+" delay={0.2} />
             </div>
-            <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mt-1">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55 mt-1">
               Items crafted
             </p>
           </div>
@@ -60,7 +60,7 @@ export function SocialProof() {
             <div className="text-2xl sm:text-3xl font-light tracking-tight">
               <NumberTicker value={4} prefix="" suffix=".9" delay={0.4} />
             </div>
-            <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mt-1">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55 mt-1">
               Avg rating
             </p>
           </div>

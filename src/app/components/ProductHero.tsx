@@ -97,7 +97,7 @@ export function ProductHero({
               {badges.map((badge) => (
                 <span
                   key={badge}
-                  className="text-[10px] tracking-[0.1em] uppercase text-foreground/35 px-3 py-1.5 border border-foreground/8 rounded-full"
+                  className="text-[10px] tracking-[0.1em] uppercase text-foreground/50 px-3 py-1.5 border border-foreground/8 rounded-full"
                 >
                   {badge}
                 </span>

@@ -57,7 +57,7 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
           className={`w-7 h-7 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${
             open
               ? "border-foreground/30 bg-foreground text-cream rotate-0"
-              : "border-foreground/15 text-foreground/40 rotate-0"
+              : "border-foreground/15 text-foreground/55 rotate-0"
           }`}
         >
           {open ? <Minus size={12} strokeWidth={2} /> : <Plus size={12} strokeWidth={2} />}
@@ -93,7 +93,7 @@ export function FAQ() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/40 mb-3">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/55 mb-3">
             Got questions?
           </p>
           <h2 className="text-2xl sm:text-3xl font-light tracking-tight">

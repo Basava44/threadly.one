@@ -13,7 +13,7 @@ export default function Terms() {
           <h1 className="text-[11px] tracking-[0.3em] uppercase text-foreground/50 mb-2 text-center">
             Terms &amp; Conditions
           </h1>
-          <p className="text-[11px] text-foreground/40 text-center mb-14">
+          <p className="text-[11px] text-foreground/55 text-center mb-14">
             Last updated: May 4, 2026
           </p>
 

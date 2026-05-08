@@ -18,6 +18,24 @@ const navLinks = [
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const updateCartCount = () => {
+      const raw = localStorage.getItem("threadly_cart");
+      const items = raw ? JSON.parse(raw) : [];
+      setCartCount(items.reduce((sum: number, i: { quantity: number }) => sum + i.quantity, 0));
+    };
+    updateCartCount();
+
+    // Listen for storage changes (other tabs) and custom event (same tab)
+    window.addEventListener("storage", updateCartCount);
+    window.addEventListener("cart-updated", updateCartCount);
+    return () => {
+      window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("cart-updated", updateCartCount);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -36,7 +54,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="relative group">
-          <Image src={logo} alt="threadly.one" width={240} height={96} className="h-22 w-auto transition-transform duration-300 group-hover:scale-[1.02]" priority />
+          <Image src={logo} alt="threadly.one" width={240} height={96} className="h-28 w-auto transition-transform duration-300 group-hover:scale-[1.02]" priority />
         </Link>
 
         {/* Desktop Nav */}
@@ -61,6 +79,11 @@ export function Header() {
             className="relative text-foreground/70 hover:text-foreground transition-colors hover:scale-110 active:scale-95 duration-200"
           >
             <ShoppingBag size={18} strokeWidth={1.5} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-foreground text-cream text-[9px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
           </Link>
 
           {/* Mobile hamburger */}

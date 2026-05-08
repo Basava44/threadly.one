@@ -94,13 +94,13 @@ export function Customizer() {
           transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
           className="text-center mb-8 sm:mb-12"
         >
-          <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/35 mb-3">
+          <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-3">
             Made just for you
           </p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight mb-4">
             Customise Yours
           </h2>
-          <p className="text-sm text-foreground/45 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-foreground/60 max-w-md mx-auto leading-relaxed">
             Pick your product, choose a colour, add your initials — and see it come to life.
           </p>
         </motion.div>
@@ -115,10 +115,10 @@ export function Customizer() {
             suppressHydrationWarning
           >
             {/* Corner hints */}
-            <div className="absolute top-4 left-4 text-[9px] tracking-[0.15em] uppercase text-foreground/25">
+            <div className="absolute top-4 left-4 text-[9px] tracking-[0.15em] uppercase text-foreground/50">
               Drag to rotate
             </div>
-            <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-[9px] tracking-[0.1em] text-foreground/25">
+            <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-[9px] tracking-[0.1em] text-foreground/50">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               Live preview
             </div>
@@ -140,7 +140,7 @@ export function Customizer() {
           >
             {/* Product picker */}
             <div>
-              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-3 block">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
                 Product
               </label>
               <div className="flex gap-2">
@@ -163,7 +163,7 @@ export function Customizer() {
 
             {/* Color picker */}
             <div>
-              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-3 block">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
                 Colour — {customizerColors.find(c => c.hex === color)?.name || ""}
               </label>
               <div className="flex gap-3">
@@ -197,7 +197,7 @@ export function Customizer() {
 
             {/* Text input */}
             <div>
-              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-3 block">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
                 Your Initials / Text
               </label>
               <div className="relative">
@@ -216,14 +216,14 @@ export function Customizer() {
                 {text && (
                   <button
                     onClick={() => setText("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/45 hover:text-foreground/60 transition-colors"
                   >
                     <X size={14} strokeWidth={1.5} />
                   </button>
                 )}
               </div>
               <div className="flex items-center justify-between mt-1.5">
-                <span className="text-[9px] text-foreground/30">
+                <span className="text-[9px] text-foreground/45">
                   {text.length}/20 characters
                 </span>
                 {textError && (
@@ -242,12 +242,12 @@ export function Customizer() {
                   transition={{ duration: 0.3 }}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40">
+                    <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55">
                       Size
                     </label>
                     <button
                       onClick={() => setSizeChartOpen(true)}
-                      className="flex items-center gap-1 text-[9px] tracking-[0.1em] uppercase text-foreground/45 hover:text-foreground transition-colors"
+                      className="flex items-center gap-1 text-[9px] tracking-[0.1em] uppercase text-foreground/60 hover:text-foreground transition-colors"
                     >
                       <Ruler size={11} strokeWidth={1.5} />
                       Size Chart
@@ -275,7 +275,7 @@ export function Customizer() {
 
             {/* Symbols */}
             <div>
-              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-3 block">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
                 Add Symbol
               </label>
               <div className="flex flex-wrap gap-2">
@@ -310,7 +310,7 @@ export function Customizer() {
             {/* Price & CTA */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] tracking-[0.15em] uppercase text-foreground/40">
+                <span className="text-[10px] tracking-[0.15em] uppercase text-foreground/55">
                   Total
                 </span>
                 <span className="text-xl font-light">
@@ -374,19 +374,19 @@ export function Customizer() {
             >
               <button
                 onClick={() => setSizeChartOpen(false)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/40 hover:text-foreground hover:border-foreground/30 transition-all"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/55 hover:text-foreground hover:border-foreground/30 transition-all"
               >
                 <X size={14} strokeWidth={1.5} />
               </button>
               <h3 className="text-lg font-light tracking-tight mb-1">Size Chart</h3>
-              <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/35 mb-6">Oversized Fit (in cm)</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/50 mb-6">Oversized Fit (in cm)</p>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-foreground/10">
-                    <th className="text-left py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/35 font-normal">Size</th>
-                    <th className="text-center py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/35 font-normal">Chest</th>
-                    <th className="text-center py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/35 font-normal">Length</th>
-                    <th className="text-center py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/35 font-normal">Shoulder</th>
+                    <th className="text-left py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/50 font-normal">Size</th>
+                    <th className="text-center py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/50 font-normal">Chest</th>
+                    <th className="text-center py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/50 font-normal">Length</th>
+                    <th className="text-center py-2.5 text-[9px] tracking-[0.15em] uppercase text-foreground/50 font-normal">Shoulder</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -406,7 +406,7 @@ export function Customizer() {
                   ))}
                 </tbody>
               </table>
-              <p className="text-[9px] text-foreground/35 mt-5">
+              <p className="text-[9px] text-foreground/50 mt-5">
                 Measurements may vary by 1-2 cm. Oversized fit — size down for a less relaxed look.
               </p>
             </motion.div>
@@ -418,19 +418,19 @@ export function Customizer() {
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3.5 bg-foreground text-cream text-xs tracking-[0.1em] uppercase rounded-lg shadow-xl flex items-center gap-3 border border-cream/10"
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3.5 bg-cream text-foreground text-xs tracking-[0.1em] uppercase rounded-lg shadow-xl flex items-center gap-3 border border-foreground/15"
           >
-            <div className="w-5 h-5 rounded-full bg-cream/15 flex items-center justify-center">
-              <Check size={11} strokeWidth={2.5} />
+            <div className="w-5 h-5 rounded-full bg-foreground/10 flex items-center justify-center">
+              <Check size={11} strokeWidth={2.5} className="text-foreground" />
             </div>
             {toast}
             <button
               onClick={() => router.push("/cart")}
-              className="ml-2 px-3 py-1 bg-cream/10 hover:bg-cream/20 rounded-sm transition-colors text-cream/80 hover:text-cream"
+              className="ml-2 px-3 py-1 bg-foreground text-cream rounded-sm transition-colors hover:bg-accent-dark"
             >
               View Cart
             </button>

@@ -68,7 +68,7 @@ export default function ProductsPage() {
           <Particles className="opacity-[0.02]" quantity={15} />
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
             <BlurFade>
-              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/35 mb-3">
+              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-3">
                 What we make
               </p>
             </BlurFade>
@@ -78,7 +78,7 @@ export default function ProductsPage() {
               </h1>
             </BlurFade>
             <BlurFade delay={0.2}>
-              <p className="text-base text-foreground/45 max-w-md mx-auto leading-relaxed">
+              <p className="text-base text-foreground/60 max-w-md mx-auto leading-relaxed">
                 Each piece is made to order with premium materials and custom embroidery — just for you.
               </p>
             </BlurFade>
@@ -94,22 +94,22 @@ export default function ProductsPage() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: [0.33, 1, 0.68, 1] }}
-                className="group bg-cream border border-foreground/8 rounded-lg p-7 sm:p-9 hover:border-foreground/15 hover:shadow-md transition-all duration-500"
+                className="group bg-cream border border-foreground/8 rounded-lg p-5 sm:p-9 hover:border-foreground/15 hover:shadow-md transition-all duration-500"
               >
                 {/* Header */}
-                <div className="flex items-start justify-between mb-5">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-2 sm:gap-0">
                   <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h2 className="text-xl sm:text-2xl font-light tracking-tight">{product.name}</h2>
+                    <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+                      <h2 className="text-lg sm:text-2xl font-light tracking-tight">{product.name}</h2>
                       <span className="text-[9px] tracking-[0.15em] uppercase text-foreground/50 px-2.5 py-1 bg-warm rounded-full border border-foreground/8">
                         {product.highlight}
                       </span>
                     </div>
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/35">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/50">
                       Starting at
                     </p>
                   </div>
-                  <p className="text-2xl font-light text-foreground/80">
+                  <p className="text-xl sm:text-2xl font-light text-foreground/80">
                     &#8377;{product.price.toLocaleString("en-IN")}
                   </p>
                 </div>
@@ -120,13 +120,13 @@ export default function ProductsPage() {
 
                 {/* Details */}
                 <div className="mb-7">
-                  <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/35 mb-4">
+                  <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/50 mb-4">
                     What&apos;s included
                   </p>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {product.details.map((detail, j) => (
                       <li key={j} className="text-xs text-foreground/55 flex items-start gap-2.5">
-                        <Check size={13} strokeWidth={2} className="text-foreground/30 mt-0.5 shrink-0" />
+                        <Check size={13} strokeWidth={2} className="text-foreground/45 mt-0.5 shrink-0" />
                         {detail}
                       </li>
                     ))}

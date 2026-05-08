@@ -259,7 +259,7 @@ export default function CartPage() {
                     transition={{ duration: 0.4, delay: 0.3 }}
                     className="text-center py-20"
                   >
-                    <p className="text-foreground/40 mb-6">Nothing here yet.</p>
+                    <p className="text-foreground/55 mb-6">Nothing here yet.</p>
                     <Link
                       href="/customize"
                       className="inline-block px-8 py-3 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-colors"
@@ -286,7 +286,7 @@ export default function CartPage() {
                               <span className="w-6 h-6 rounded-full bg-foreground text-cream text-[10px] flex items-center justify-center font-medium">
                                 {index + 1}
                               </span>
-                              <span className="text-[10px] tracking-[0.2em] uppercase text-foreground/40">
+                              <span className="text-[10px] tracking-[0.2em] uppercase text-foreground/55">
                                 Item {index + 1} of {cart.length}
                               </span>
                             </div>
@@ -310,7 +310,7 @@ export default function CartPage() {
                                 {/* Size selector (tee only) */}
                                 {item.product === "tee" && (
                                   <div className="flex items-center gap-1.5 mt-2">
-                                    <span className="text-[9px] tracking-[0.15em] uppercase text-foreground/40">Size:</span>
+                                    <span className="text-[9px] tracking-[0.15em] uppercase text-foreground/55">Size:</span>
 
                                     {["S", "M", "L", "XL", "XXL"].map((s) => (
                                       <button
@@ -385,13 +385,13 @@ export default function CartPage() {
                       className="mt-8 pt-6 border-t border-foreground/10 flex items-center justify-between"
                     >
                       <div>
-                        <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mb-1">
+                        <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55 mb-1">
                           {cart.reduce((sum, i) => sum + i.quantity, 0)} item{cart.reduce((sum, i) => sum + i.quantity, 0) > 1 ? "s" : ""}
                         </p>
                         <p className="text-xl font-light">
                           ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                         </p>
-                        <p className="text-[9px] text-foreground/40 mt-0.5">Inclusive of all taxes</p>
+                        <p className="text-[9px] text-foreground/55 mt-0.5">Inclusive of all taxes</p>
                       </div>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -458,7 +458,7 @@ export default function CartPage() {
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       placeholder="Your full name"
-                      className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+                      className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors"
                     />
                   </div>
 
@@ -477,7 +477,7 @@ export default function CartPage() {
                         placeholder="10-digit mobile number"
                         maxLength={10}
                         disabled={phoneVerified}
-                        className="flex-1 px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors disabled:opacity-50"
+                        className="flex-1 px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors disabled:opacity-50"
                       />
                       {!phoneVerified && !otpSent && (
                         <button
@@ -504,7 +504,7 @@ export default function CartPage() {
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                             placeholder="Enter 6-digit OTP"
                             maxLength={6}
-                            className="flex-1 px-5 py-3 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+                            className="flex-1 px-5 py-3 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors"
                           />
                           <button
                             type="button"
@@ -525,7 +525,7 @@ export default function CartPage() {
                         </button>
                       </div>
                     )}
-                    <span className="text-[9px] text-foreground/40 mt-1 block">
+                    <span className="text-[9px] text-foreground/55 mt-1 block">
                       {phoneVerified ? "Phone verified" : "We\u2019ll send order updates here"}
                     </span>
                     {authError && (
@@ -541,7 +541,7 @@ export default function CartPage() {
                       onChange={(e) => setForm({ ...form, address: e.target.value })}
                       placeholder="House/flat no., street, landmark"
                       rows={3}
-                      className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors resize-none"
+                      className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors resize-none"
                     />
                   </div>
 
@@ -554,7 +554,7 @@ export default function CartPage() {
                         value={form.city}
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
                         placeholder="City"
-                        className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+                        className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors"
                       />
                     </div>
                     <div>
@@ -567,7 +567,7 @@ export default function CartPage() {
                         onChange={(e) => setForm({ ...form, pincode: e.target.value.replace(/\D/g, "").slice(0, 6) })}
                         placeholder="6-digit pincode"
                         maxLength={6}
-                        className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+                        className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors"
                       />
                     </div>
                   </div>
@@ -578,7 +578,7 @@ export default function CartPage() {
                       <span className="text-foreground/60">{cart.reduce((sum, i) => sum + i.quantity, 0)} item{cart.reduce((sum, i) => sum + i.quantity, 0) > 1 ? "s" : ""}</span>
                       <span className="font-medium">₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <p className="text-[9px] text-foreground/40 mb-4">Inclusive of all taxes</p>
+                    <p className="text-[9px] text-foreground/55 mb-4">Inclusive of all taxes</p>
                     {submitErrors.length > 0 && (
                       <div className="mb-3 flex flex-col gap-1">
                         {submitErrors.map((err) => (

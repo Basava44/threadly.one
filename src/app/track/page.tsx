@@ -152,7 +152,7 @@ export default function TrackPage() {
                 <Package size={20} strokeWidth={1.5} className="text-foreground/50" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-light tracking-tight mb-2">Track Your Order</h1>
-              <p className="text-sm text-foreground/45">
+              <p className="text-sm text-foreground/60">
                 Enter the phone number you used while placing the order.
               </p>
             </div>
@@ -160,12 +160,12 @@ export default function TrackPage() {
             {!otpSent ? (
               <form onSubmit={handleSendOtp} className="mb-12">
                 <div className="bg-cream border border-foreground/10 rounded-lg p-6">
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-3 block">
+                  <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
                     Phone Number
                   </label>
                   <div className="flex gap-3">
                     <div className="flex items-center gap-2 px-4 py-3.5 bg-warm border border-foreground/10 rounded-sm">
-                      <Phone size={14} strokeWidth={1.5} className="text-foreground/40" />
+                      <Phone size={14} strokeWidth={1.5} className="text-foreground/55" />
                       <span className="text-sm text-foreground/60">+91</span>
                     </div>
                     <input
@@ -198,7 +198,7 @@ export default function TrackPage() {
                   <p className="text-xs text-foreground/50 mb-4">
                     OTP sent to <span className="font-mono font-medium">+91 {phone}</span>
                   </p>
-                  <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/40 mb-3 block">
+                  <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
                     Verification Code
                   </label>
                   <input
@@ -274,15 +274,15 @@ export default function TrackPage() {
                   {/* Order info card */}
                   <div className="bg-cream border border-foreground/10 rounded-lg p-6 mb-8">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40">Order ID</p>
+                      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55">Order ID</p>
                       <p className="font-mono text-sm font-medium">{order.id}</p>
                     </div>
                     <div className="flex items-center justify-between mb-4">
-                      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40">Placed on</p>
+                      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55">Placed on</p>
                       <p className="text-sm">{order.date}</p>
                     </div>
                     <div className="border-t border-foreground/8 pt-4">
-                      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mb-2">Items</p>
+                      <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55 mb-2">Items</p>
                       {order.items.map((item, i) => (
                         <p key={i} className="text-xs text-foreground/65 mb-1">{item}</p>
                       ))}
@@ -308,7 +308,7 @@ export default function TrackPage() {
 
                   {/* Status tracker */}
                   <div className="bg-cream border border-foreground/10 rounded-lg p-6">
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mb-6">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55 mb-6">
                       Order Progress
                     </p>
                     <div className="relative">
@@ -340,14 +340,14 @@ export default function TrackPage() {
                               {step.icon}
                             </div>
                             <div>
-                              <p className={`text-sm transition-colors duration-300 ${isComplete ? "font-medium text-foreground" : "text-foreground/35"}`}>
+                              <p className={`text-sm transition-colors duration-300 ${isComplete ? "font-medium text-foreground" : "text-foreground/50"}`}>
                                 {step.label}
                               </p>
                               {isCurrent && (
                                 <motion.p
                                   initial={{ opacity: 0, y: 4 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  className="text-[10px] text-foreground/45 mt-0.5"
+                                  className="text-[10px] text-foreground/60 mt-0.5"
                                 >
                                   Current status
                                 </motion.p>
@@ -368,9 +368,9 @@ export default function TrackPage() {
                   className="text-center py-16 bg-cream border border-foreground/8 rounded-lg"
                 >
                   <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-warm flex items-center justify-center">
-                    <Package size={22} strokeWidth={1.5} className="text-foreground/30" />
+                    <Package size={22} strokeWidth={1.5} className="text-foreground/45" />
                   </div>
-                  <p className="text-foreground/40 mb-4">No order found for this number.</p>
+                  <p className="text-foreground/55 mb-4">No order found for this number.</p>
                   <Link
                     href="/customize"
                     className="text-[11px] tracking-[0.15em] uppercase text-foreground/60 hover:text-foreground transition-colors underline underline-offset-4"
@@ -384,7 +384,7 @@ export default function TrackPage() {
             <div className="mt-12 pt-6 border-t border-foreground/8 flex items-center justify-between">
               <Link
                 href="/"
-                className="text-xs text-foreground/45 hover:text-foreground transition-colors flex items-center gap-1.5 group"
+                className="text-xs text-foreground/60 hover:text-foreground transition-colors flex items-center gap-1.5 group"
               >
                 <ArrowLeft size={14} strokeWidth={1.5} className="group-hover:-translate-x-0.5 transition-transform" />
                 Back to home
@@ -392,7 +392,7 @@ export default function TrackPage() {
               {searched && (
                 <button
                   onClick={handleReset}
-                  className="text-xs text-foreground/45 hover:text-foreground transition-colors"
+                  className="text-xs text-foreground/60 hover:text-foreground transition-colors"
                 >
                   Check another number
                 </button>

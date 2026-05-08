@@ -19,7 +19,7 @@ export default function About() {
           <Particles className="opacity-[0.025]" quantity={25} />
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 text-center relative z-10">
             <BlurFade delay={0}>
-              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/35 mb-5">
+              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-5">
                 Our Story
               </p>
             </BlurFade>
@@ -31,7 +31,7 @@ export default function About() {
               </h1>
             </BlurFade>
             <BlurFade delay={0.25}>
-              <p className="text-lg text-foreground/45 font-light">
+              <p className="text-lg text-foreground/60 font-light">
                 And somehow, it worked.
               </p>
             </BlurFade>
@@ -106,7 +106,7 @@ export default function About() {
         <section className="py-24 sm:py-32 bg-warm">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <BlurFade>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/35 text-center mb-3">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/50 text-center mb-3">
                 What drives us
               </p>
               <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-center mb-16">
@@ -130,13 +130,13 @@ export default function About() {
               ].map((value, i) => (
                 <BlurFade key={value.title} delay={i * 0.1}>
                   <div className="text-center group">
-                    <div className="w-12 h-12 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/30 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
+                    <div className="w-12 h-12 mx-auto mb-5 rounded-full border border-foreground/10 flex items-center justify-center text-foreground/45 group-hover:border-foreground/20 group-hover:text-foreground/50 transition-all duration-300">
                       <span className="text-lg font-light">{i + 1}</span>
                     </div>
                     <h3 className="text-xs tracking-[0.15em] uppercase text-foreground/80 font-medium mb-3">
                       {value.title}
                     </h3>
-                    <p className="text-sm text-foreground/45 leading-relaxed">
+                    <p className="text-sm text-foreground/60 leading-relaxed">
                       {value.desc}
                     </p>
                   </div>

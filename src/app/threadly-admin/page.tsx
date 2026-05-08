@@ -113,7 +113,7 @@ export default function AdminPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter password"
-            className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors mb-3"
+            className="w-full px-5 py-3.5 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors mb-3"
           />
           {authError && <p className="text-[10px] text-red-500 mb-3">{authError}</p>}
           <button
@@ -144,13 +144,13 @@ export default function AdminPage() {
 
         {/* Search */}
         <div className="relative mb-6">
-          <Search size={14} strokeWidth={1.5} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30" />
+          <Search size={14} strokeWidth={1.5} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/45" />
           <input
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Search by order ID, phone, or name..."
-            className="w-full pl-10 pr-5 py-3 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/30 focus:outline-none focus:border-foreground/40 transition-colors"
+            className="w-full pl-10 pr-5 py-3 bg-cream border border-foreground/15 rounded-sm text-sm placeholder:text-foreground/35 focus:outline-none focus:border-foreground/40 transition-colors"
           />
         </div>
 
@@ -161,7 +161,7 @@ export default function AdminPage() {
               const count = orders.filter((o) => o.status === s).length;
               return (
                 <div key={s} className="bg-cream border border-foreground/10 rounded-sm px-4 py-2.5 flex items-center gap-2">
-                  <span className="text-[10px] tracking-[0.1em] uppercase text-foreground/40">{s}</span>
+                  <span className="text-[10px] tracking-[0.1em] uppercase text-foreground/55">{s}</span>
                   <span className="text-sm font-light">{count}</span>
                 </div>
               );
@@ -182,9 +182,9 @@ export default function AdminPage() {
               }, {})
             ).sort((a, b) => b[1].revenue - a[1].revenue).map(([product, data]) => (
               <div key={product} className="bg-cream border border-foreground/10 rounded-sm p-4">
-                <p className="text-[10px] tracking-[0.1em] uppercase text-foreground/40 mb-1">{product}</p>
+                <p className="text-[10px] tracking-[0.1em] uppercase text-foreground/55 mb-1">{product}</p>
                 <p className="text-lg font-light">&#8377;{data.revenue.toLocaleString("en-IN")}</p>
-                <p className="text-[10px] text-foreground/40 mt-0.5">{data.qty} sold</p>
+                <p className="text-[10px] text-foreground/55 mt-0.5">{data.qty} sold</p>
               </div>
             ))}
             <div className="bg-foreground text-cream border border-foreground/10 rounded-sm p-4">
@@ -198,23 +198,23 @@ export default function AdminPage() {
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={20} className="animate-spin text-foreground/30" />
+            <Loader2 size={20} className="animate-spin text-foreground/45" />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-foreground/40 py-20 text-sm">No orders found.</p>
+          <p className="text-center text-foreground/55 py-20 text-sm">No orders found.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-foreground/10">
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Order ID</th>
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Product</th>
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Initials</th>
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Customer</th>
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Phone</th>
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">City</th>
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Status</th>
-                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/40 font-normal">Date</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Order ID</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Product</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Initials</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Customer</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Phone</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">City</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Status</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -257,7 +257,7 @@ export default function AdminPage() {
         )}
 
         {/* Order count */}
-        <p className="text-[10px] text-foreground/30 mt-4">
+        <p className="text-[10px] text-foreground/45 mt-4">
           {filtered.length} order{filtered.length !== 1 ? "s" : ""}
         </p>
       </div>

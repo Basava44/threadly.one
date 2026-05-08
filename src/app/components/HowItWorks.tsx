@@ -20,7 +20,7 @@ export function HowItWorks() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-[11px] tracking-[0.3em] uppercase text-foreground/40 text-center mb-14"
+          className="text-[11px] tracking-[0.3em] uppercase text-foreground/55 text-center mb-14"
         >
           How It Works
         </motion.h2>
@@ -40,17 +40,17 @@ export function HowItWorks() {
                 {i > 0 && (
                   <div className="hidden lg:block absolute top-1/2 -left-[calc(50%+12px)] w-[calc(100%-24px)] h-px bg-foreground/10" />
                 )}
-                <div className="w-14 h-14 mx-auto rounded-full border border-foreground/10 flex items-center justify-center text-foreground/35 group-hover:border-foreground/25 group-hover:text-foreground/60 group-hover:bg-warm/50 transition-all duration-300 relative z-10">
+                <div className="w-14 h-14 mx-auto rounded-full border border-foreground/10 flex items-center justify-center text-foreground/50 group-hover:border-foreground/25 group-hover:text-foreground/60 group-hover:bg-warm/50 transition-all duration-300 relative z-10">
                   {stepIcons[i]}
                 </div>
               </div>
-              <div className="text-[10px] tracking-[0.2em] text-foreground/30 font-mono mb-1.5">
+              <div className="text-[10px] tracking-[0.2em] text-foreground/60 font-mono mb-1.5">
                 0{item.step}
               </div>
               <h3 className="text-xs font-medium tracking-[0.15em] uppercase mb-2 text-foreground/80">
                 {item.title}
               </h3>
-              <p className="text-[11px] text-foreground/45 leading-relaxed max-w-[180px] mx-auto">
+              <p className="text-[11px] text-foreground/70 leading-relaxed max-w-[180px] mx-auto">
                 {item.desc}
               </p>
             </motion.div>

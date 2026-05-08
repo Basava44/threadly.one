@@ -36,13 +36,13 @@ export default function Home() {
             {/* Decorative elements */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b from-transparent to-foreground/10" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/40 mb-5">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/55 mb-5">
                 Make It Yours
               </p>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-foreground/85 mb-5 max-w-lg mx-auto leading-tight tracking-tight">
                 Design something that&apos;s uniquely you.
               </h2>
-              <p className="text-base text-foreground/45 mb-10 max-w-md mx-auto leading-relaxed">
+              <p className="text-base text-foreground/60 mb-10 max-w-md mx-auto leading-relaxed">
                 Pick your product, choose a colour, add your initials — and we&apos;ll craft it just for you.
               </p>
               <Link
