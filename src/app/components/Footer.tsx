@@ -8,7 +8,7 @@ import logo from "@/app/assets/logo.png";
 const helpLinks = [
   { label: "Shipping & Orders", href: "/terms" },
   { label: "FAQs", href: "/#faq" },
-  { label: "Contact Us", href: "#" },
+  { label: "Contact Us", href: "/contact" },
   { label: "Feedback", href: "/feedback" },
 ];
 

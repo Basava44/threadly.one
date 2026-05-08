@@ -3,10 +3,11 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { Search, Package, Scissors, Truck, CheckCircle2, ArrowLeft, Loader2, Phone } from "lucide-react";
+import { Search, Package, Scissors, Truck, CheckCircle2, ArrowLeft, Loader2, Phone, Download } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { supabase } from "@/lib/supabase";
+import { generateReceipt } from "@/lib/generateReceipt";
 
 type OrderStatus = "confirmed" | "crafting" | "shipped" | "delivered";
 
@@ -15,6 +16,8 @@ interface OrderResult {
   status: OrderStatus;
   items: string[];
   date: string;
+  price: number;
+  quantity: number;
 }
 
 const statusSteps: { key: OrderStatus; label: string; icon: React.ReactNode }[] = [
@@ -120,6 +123,8 @@ export default function TrackPage() {
           month: "short",
           year: "numeric",
         }),
+        price: row.price || 0,
+        quantity: row.quantity || 1,
       }));
       setOrders(mapped);
       setOrder(mapped[0]);
@@ -284,17 +289,34 @@ export default function TrackPage() {
                     </div>
                   </div>
 
+                  {/* Download Receipt */}
+                  <button
+                    onClick={() =>
+                      generateReceipt({
+                        orderId: order.id,
+                        date: order.date,
+                        items: order.items.map((item) => ({ name: item, quantity: order.quantity, price: order.price })),
+                        total: order.price * order.quantity,
+                        status: order.status,
+                      })
+                    }
+                    className="w-full mb-8 px-5 py-3.5 bg-cream border border-foreground/10 rounded-lg text-[11px] tracking-[0.15em] uppercase text-foreground/60 hover:text-foreground hover:border-foreground/25 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Download size={14} strokeWidth={1.5} />
+                    Download Receipt
+                  </button>
+
                   {/* Status tracker */}
                   <div className="bg-cream border border-foreground/10 rounded-lg p-6">
                     <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/40 mb-6">
                       Order Progress
                     </p>
-                    <div className="relative pl-5">
+                    <div className="relative">
                       {/* Vertical connector line */}
-                      <div className="absolute left-[19px] top-[24px] bottom-[24px] w-px bg-foreground/10" />
+                      <div className="absolute left-[20px] top-[20px] bottom-[20px] w-px bg-foreground/10" />
                       <div
-                        className="absolute left-[19px] top-[24px] w-px bg-foreground transition-all duration-700"
-                        style={{ height: `${(currentStep / (statusSteps.length - 1)) * 100}%`, maxHeight: "calc(100% - 48px)" }}
+                        className="absolute left-[20px] top-[20px] w-px bg-foreground transition-all duration-700"
+                        style={{ height: `calc(${(currentStep / (statusSteps.length - 1)) * 100}% - ${(currentStep / (statusSteps.length - 1)) * 40}px)` }}
                       />
 
                       {statusSteps.map((step, i) => {

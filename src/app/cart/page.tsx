@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { Minus, Plus, Trash2, ArrowLeft, Check, Loader2 } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowLeft, Check, Loader2, Download } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { CartItem, getCart, removeFromCart, updateCartItem, clearCart } from "../data/cart";
 import { customizerColors } from "../data/products";
 import { supabase } from "@/lib/supabase";
+import { generateReceipt, ReceiptData } from "@/lib/generateReceipt";
 
 const productLabels: Record<string, string> = {
   cap: "Bucket Cap",
@@ -28,6 +29,7 @@ export default function CartPage() {
   const [authError, setAuthError] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const [submitErrors, setSubmitErrors] = useState<string[]>([]);
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -187,6 +189,17 @@ export default function CartPage() {
         }
 
         setOrderId(orderIds[0]);
+        setReceiptData({
+          orderId: orderIds[0],
+          date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+          items: cart.map((item) => ({
+            name: `${productLabels[item.product]} — "${item.text || "No text"}"`,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          total,
+          shipping: { name: form.name, phone: form.phone, address: form.address, city: form.city, pincode: form.pincode },
+        });
         clearCart();
         setStep("done");
       },
@@ -631,8 +644,17 @@ export default function CartPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="flex flex-col sm:flex-row justify-center items-center gap-3 "
+                  className="flex flex-col sm:flex-row justify-center items-center gap-3"
                 >
+                  {receiptData && (
+                    <button
+                      onClick={() => generateReceipt(receiptData)}
+                      className="inline-flex items-center gap-2 px-8 py-3 border border-foreground/20 text-foreground text-[11px] tracking-[0.15em] uppercase rounded-sm hover:border-foreground/40 transition-colors"
+                    >
+                      <Download size={14} strokeWidth={1.5} />
+                      Download Receipt
+                    </button>
+                  )}
                   <Link
                     href="/"
                     className="inline-block px-8 py-3 border border-foreground/20 text-foreground text-[11px] tracking-[0.15em] uppercase rounded-sm hover:border-foreground/40 transition-colors"
