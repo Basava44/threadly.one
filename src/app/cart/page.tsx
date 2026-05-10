@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { Minus, Plus, Trash2, ArrowLeft, Check, Loader2, Download } from "lucide-react";
+import { Trash2, ArrowLeft, Check, Loader2, Download, X } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { CartItem, getCart, removeFromCart, updateCartItem, clearCart } from "../data/cart";
@@ -30,6 +30,7 @@ export default function CartPage() {
   const [resendTimer, setResendTimer] = useState(0);
   const [submitErrors, setSubmitErrors] = useState<string[]>([]);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -43,13 +44,6 @@ export default function CartPage() {
     setCart(getCart());
   };
 
-  const handleQuantity = (id: string, delta: number) => {
-    const item = cart.find((i) => i.id === id);
-    if (!item) return;
-    const newQty = Math.max(1, item.quantity + delta);
-    updateCartItem(id, { quantity: newQty });
-    setCart(getCart());
-  };
 
   const handleSizeChange = (id: string, newSize: string) => {
     updateCartItem(id, { size: newSize });
@@ -292,11 +286,36 @@ export default function CartPage() {
                             </div>
 
                             <div className="flex items-center gap-4 sm:gap-6">
-                              {/* Color swatch */}
-                              <div
-                                className="w-12 h-12 rounded-full border border-foreground/10 shrink-0"
-                                style={{ backgroundColor: item.color }}
-                              />
+                              {/* Design preview */}
+                              <div className="flex gap-1.5 shrink-0">
+                                {item.frontImage ? (
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <div
+                                      className="w-12 h-12 rounded border border-foreground/10 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                                      onClick={() => setPreviewImage(item.frontImage!)}
+                                    >
+                                      <img src={item.frontImage} alt="Front design" className="w-full h-full object-cover scale-[1.4]" />
+                                    </div>
+                                    <span className="text-[8px] uppercase tracking-wider text-foreground/40">Front</span>
+                                  </div>
+                                ) : (
+                                  <div
+                                    className="w-12 h-12 rounded border border-foreground/10"
+                                    style={{ backgroundColor: item.color }}
+                                  />
+                                )}
+                                {item.backImage && (
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <div
+                                      className="w-12 h-12 rounded border border-foreground/10 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                                      onClick={() => setPreviewImage(item.backImage!)}
+                                    >
+                                      <img src={item.backImage} alt="Back design" className="w-full h-full object-cover scale-[1.4]" />
+                                    </div>
+                                    <span className="text-[8px] uppercase tracking-wider text-foreground/40">Back</span>
+                                  </div>
+                                )}
+                              </div>
 
                               {/* Details */}
                               <div className="flex-1 min-w-0">
@@ -328,34 +347,6 @@ export default function CartPage() {
                                   </div>
                                 )}
 
-                                {/* Quantity + actions */}
-                                <div className="flex items-center gap-3 mt-3">
-                                  {/* Quantity */}
-                                  <div className="flex items-center border border-foreground/15 rounded-sm">
-                                    <button
-                                      onClick={() => handleQuantity(item.id, -1)}
-                                      className="w-7 h-7 flex items-center justify-center text-foreground/50 hover:text-foreground transition-colors"
-                                    >
-                                      <Minus size={12} />
-                                    </button>
-                                    <span className="w-8 text-center text-xs font-medium">{item.quantity}</span>
-                                    <button
-                                      onClick={() => handleQuantity(item.id, 1)}
-                                      className="w-7 h-7 flex items-center justify-center text-foreground/50 hover:text-foreground transition-colors"
-                                    >
-                                      <Plus size={12} />
-                                    </button>
-                                  </div>
-
-                                  {/* Edit */}
-                                  <Link
-                                    href={`/customize?edit=${item.id}`}
-                                    className="text-[10px] tracking-[0.1em] uppercase text-foreground/50 hover:text-foreground transition-colors border border-foreground/15 px-2.5 py-1.5 rounded-sm hover:border-foreground/40"
-                                  >
-                                    Edit
-                                  </Link>
-
-                                </div>
                               </div>
 
                               {/* Price + Delete */}
@@ -674,6 +665,37 @@ export default function CartPage() {
         </div>
       </main>
       <Footer />
+
+      {/* Image Preview Modal */}
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+            onClick={() => setPreviewImage(null)}
+          >
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+                aria-label="Close preview"
+              >
+                <X size={16} />
+              </button>
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="w-80 h-80 sm:w-[28rem] sm:h-[28rem] rounded-xl shadow-2xl bg-[#E8E8E8] overflow-hidden"
+              >
+                <img src={previewImage} alt="Design preview" className="w-full h-full object-cover scale-[1.15]" />
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

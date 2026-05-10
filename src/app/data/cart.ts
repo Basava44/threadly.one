@@ -10,6 +10,8 @@ export interface CartItem {
   size: string;
   quantity: number;
   price: number;
+  frontImage?: string;
+  backImage?: string;
 }
 
 const CART_KEY = "threadly_cart";

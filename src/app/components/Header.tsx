@@ -11,6 +11,8 @@ const navLinks = [
   { label: "HOME", href: "/" },
   { label: "PRODUCTS", href: "/products" },
   { label: "CUSTOMISE", href: "/customize" },
+  { label: "DESIGN", href: "/design" },
+  { label: "STUDIO", href: "/studio" },
   { label: "TRACK ORDER", href: "/track" },
   { label: "ABOUT US", href: "/about" },
 ];
