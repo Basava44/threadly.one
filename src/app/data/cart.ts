@@ -7,7 +7,9 @@ export interface CartItem {
   product: CustomizerProduct;
   color: string;
   text: string;
+  backText?: string;
   size: string;
+  printSize?: string;
   quantity: number;
   price: number;
   frontImage?: string;

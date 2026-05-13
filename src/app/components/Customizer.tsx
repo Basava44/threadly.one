@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ShoppingBag, Check, X, Ruler } from "lucide-react";
@@ -11,7 +11,7 @@ import {
   type CustomizerProduct,
 } from "@/app/data/products";
 import { addToCart, getCart, updateCartItem } from "@/app/data/cart";
-import { getTextColor, productSVGs } from "./ProductSVGs";
+import { getTextColor } from "./ProductSVGs";
 import dynamic from "next/dynamic";
 
 const ProductViewer3D = dynamic(
@@ -33,18 +33,30 @@ export function Customizer() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cursorPosRef = useRef<number>(0);
   const [product, setProduct] = useState<CustomizerProduct>(
-    productParam && ["cap", "tee", "tote"].includes(productParam) ? productParam : "cap"
+    productParam && ["cap", "tee", "tote"].includes(productParam) ? productParam : "tee"
   );
   const [size, setSize] = useState("M");
+  const [fontStyle, setFontStyle] = useState("serif");
+  const [fontSize, setFontSize] = useState(1);
+  const [activeView, setActiveView] = useState<"front" | "back">("front");
+  const [textPos, setTextPos] = useState<Record<"front" | "back", { x: number; y: number }>>({
+    front: { x: 50, y: 40 },
+    back: { x: 50, y: 40 },
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const glRef = useRef<any>(null);
+  const handleGlReady = useCallback((gl: any) => { glRef.current = gl; }, []);
   const [toast, setToast] = useState("");
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [textError, setTextError] = useState(false);
   const [productState, setProductState] = useState<
-    Record<CustomizerProduct, { color: string; text: string }>
+    Record<CustomizerProduct, { color: string; frontText: string; backText: string }>
   >({
-    cap: { color: customizerColors[0].hex, text: "" },
-    tee: { color: customizerColors[0].hex, text: "" },
-    tote: { color: customizerColors[0].hex, text: "" },
+    cap: { color: customizerColors[0].hex, frontText: "", backText: "" },
+    tee: { color: customizerColors[0].hex, frontText: "", backText: "" },
+    tote: { color: customizerColors[0].hex, frontText: "", backText: "" },
   });
 
   useEffect(() => {
@@ -56,30 +68,106 @@ export function Customizer() {
         setSize(item.size || "M");
         setProductState((prev) => ({
           ...prev,
-          [item.product]: { color: item.color, text: item.text },
+          [item.product]: { color: item.color, frontText: item.text || "", backText: item.backText || "" },
         }));
       }
     }
   }, [editId]);
 
   const color = productState[product].color;
-  const text = productState[product].text;
+  const text = product === "cap" ? productState[product].frontText : (activeView === "front" ? productState[product].frontText : productState[product].backText);
 
   const setColor = (hex: string) =>
     setProductState((prev) => ({ ...prev, [product]: { ...prev[product], color: hex } }));
-  const setText = (val: string | ((prev: string) => string)) =>
+  const setText = (val: string | ((prev: string) => string)) => {
+    const key = product === "cap" || activeView === "front" ? "frontText" : "backText";
     setProductState((prev) => ({
       ...prev,
       [product]: {
         ...prev[product],
-        text: typeof val === "function" ? val(prev[product].text) : val,
+        [key]: typeof val === "function" ? val(prev[product][key]) : val,
       },
     }));
+  };
 
   const textColor = getTextColor(color);
   const price = productPrices[product];
 
-  const ProductSVG = productSVGs[product];
+  // Drag handlers for text overlay
+  const currentPos = textPos[activeView];
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (product === "cap") return;
+    e.preventDefault();
+    setIsDragging(true);
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    const rect = viewerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setDragOffset({
+      x: clientX - (rect.left + (currentPos.x / 100) * rect.width),
+      y: clientY - (rect.top + (currentPos.y / 100) * rect.height),
+    });
+  };
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging || !viewerRef.current) return;
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    const rect = viewerRef.current.getBoundingClientRect();
+    const x = ((clientX - dragOffset.x - rect.left) / rect.width) * 100;
+    const y = ((clientY - dragOffset.y - rect.top) / rect.height) * 100;
+    setTextPos((prev) => ({ ...prev, [activeView]: { x: Math.max(10, Math.min(90, x)), y: Math.max(10, Math.min(90, y)) } }));
+  };
+
+  const handleDragEnd = () => setIsDragging(false);
+
+  // Capture screenshot of the 3D canvas + text overlay
+  const captureScreenshot = (view: "front" | "back"): string | undefined => {
+    const gl = glRef.current;
+    if (!gl || !viewerRef.current) return undefined;
+    const threeCanvas = gl.domElement;
+    const width = threeCanvas.width;
+    const height = threeCanvas.height;
+
+    const fullCanvas = document.createElement("canvas");
+    fullCanvas.width = width;
+    fullCanvas.height = height;
+    const fullCtx = fullCanvas.getContext("2d");
+    if (!fullCtx) return undefined;
+
+    fullCtx.drawImage(threeCanvas, 0, 0);
+
+    // Draw text overlay for tee/tote
+    const viewText = view === "front" ? productState[product].frontText : productState[product].backText;
+    if (product !== "cap" && viewText) {
+      const pos = textPos[view];
+      // Calculate position relative to the canvas element (not the viewer div)
+      const canvasRect = threeCanvas.getBoundingClientRect();
+      const viewerRect = viewerRef.current.getBoundingClientRect();
+      const offsetX = canvasRect.left - viewerRect.left;
+      const offsetY = canvasRect.top - viewerRect.top;
+      const pixelRatio = width / canvasRect.width;
+
+      // Convert viewer-relative % to canvas pixel coords
+      const xInViewer = (pos.x / 100) * viewerRect.width;
+      const yInViewer = (pos.y / 100) * viewerRect.height;
+      const xOnCanvas = (xInViewer - offsetX) * pixelRatio;
+      const yOnCanvas = (yInViewer - offsetY) * pixelRatio;
+
+      const scaledFontSize = Math.round(16 * fontSize) * pixelRatio;
+      const fontFamily = fontStyle === "sans" ? "sans-serif" : fontStyle === "script" ? "cursive" : "serif";
+      const fontWeight = fontStyle === "sans" ? "600" : "400";
+      const fontItalic = fontStyle === "serif" ? "italic " : "";
+      fullCtx.font = `${fontItalic}${fontWeight} ${scaledFontSize}px ${fontFamily}`;
+      fullCtx.fillStyle = textColor;
+      fullCtx.textAlign = "center";
+      fullCtx.textBaseline = "middle";
+      fullCtx.fillText(viewText, xOnCanvas, yOnCanvas);
+    }
+
+    return fullCanvas.toDataURL("image/png", 0.7);
+  };
+
 
   return (
     <section id="customise" className="lg:min-h-[calc(100vh-4rem)] lg:flex lg:items-center bg-warm relative overflow-hidden" suppressHydrationWarning>
@@ -108,27 +196,81 @@ export function Customizer() {
         <div className="flex flex-col lg:flex-row items-stretch gap-5 sm:gap-8 lg:gap-10 max-w-6xl mx-auto">
           {/* 3D Preview */}
           <motion.div
+            ref={viewerRef}
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.33, 1, 0.68, 1] }}
             className="w-full lg:w-1/2 flex items-center justify-center bg-cream rounded-lg border border-foreground/8 h-[300px] sm:min-h-[520px] relative group"
             suppressHydrationWarning
+            onMouseMove={handleDragMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
           >
-            {/* Corner hints */}
-            <div className="absolute top-4 left-4 text-[9px] tracking-[0.15em] uppercase text-foreground/50">
-              Drag to rotate
-            </div>
             <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-[9px] tracking-[0.1em] text-foreground/50">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               Live preview
             </div>
+            {/* Front/Back toggle */}
+            {product !== "cap" && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+                <div className="flex bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-sm border border-foreground/8">
+                  {(["front", "back"] as const).map((view) => (
+                    <button
+                      key={view}
+                      onClick={() => setActiveView(view)}
+                      className={`px-4 py-1.5 text-[10px] tracking-[0.1em] uppercase font-medium rounded-full transition-all ${
+                        activeView === view
+                          ? "bg-foreground text-cream shadow-sm"
+                          : "text-foreground/60 hover:text-foreground"
+                      }`}
+                    >
+                      {view}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <ProductViewer3D
               product={product}
               color={color}
-              text={text}
+              text={product === "cap" ? text : ""}
               textColor={textColor}
+              fontStyle={fontStyle}
+              fontSize={fontSize}
+              viewAngle={activeView === "back" ? Math.PI : 0}
               enableZoom
+              onGlReady={handleGlReady}
             />
+            {/* Draggable text overlay (tee & tote only) */}
+            {product !== "cap" && text && (
+              <div
+                className="absolute select-none z-10"
+                style={{
+                  left: `${currentPos.x}%`,
+                  top: `${currentPos.y}%`,
+                  transform: "translate(-50%, -50%)",
+                  cursor: isDragging ? "grabbing" : "grab",
+                }}
+                onMouseDown={handleDragStart}
+                onTouchStart={handleDragStart}
+              >
+                <div className="relative group">
+                  <span
+                    className={`px-2 py-1 whitespace-nowrap ${
+                      fontStyle === "serif" ? "font-serif italic font-light" :
+                      fontStyle === "script" ? "font-[cursive]" :
+                      "font-sans font-semibold tracking-wide"
+                    }`}
+                    style={{ color: textColor, fontSize: `${Math.round(16 * fontSize)}px` }}
+                  >
+                    {text}
+                  </span>
+                  <div className="absolute inset-0 border border-dashed border-foreground/30 -m-1 rounded opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Controls */}
@@ -144,7 +286,7 @@ export function Customizer() {
                 Product
               </label>
               <div className="flex gap-2">
-                {customizerProducts.map((p) => (
+                {(["tee", "tote", "cap"] as CustomizerProduct[]).map((p) => (
                   <motion.button
                     key={p}
                     whileTap={{ scale: 0.95 }}
@@ -195,10 +337,65 @@ export function Customizer() {
               </div>
             </div>
 
+            {/* Font style */}
+            <div>
+              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
+                Font Style
+              </label>
+              <div className="flex gap-2">
+                {([
+                  { label: "Serif", value: "serif", cls: "font-serif italic" },
+                  { label: "Sans", value: "sans", cls: "font-sans font-semibold tracking-wide" },
+                  { label: "Script", value: "script", cls: "font-[cursive]" },
+                ] as const).map((f) => (
+                  <motion.button
+                    key={f.value}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setFontStyle(f.value)}
+                    className={`flex-1 px-3 py-2.5 text-[11px] rounded-sm border transition-all duration-200 ${f.cls} ${
+                      fontStyle === f.value
+                        ? "bg-foreground text-cream border-foreground shadow-sm"
+                        : "bg-transparent text-foreground/60 border-foreground/15 hover:border-foreground/30"
+                    }`}
+                  >
+                    {f.label}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Font size */}
+            <div>
+              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
+                Text Size
+              </label>
+              <div className="flex gap-2">
+                {([
+                  { label: "Small", value: 0.8 },
+                  { label: "Medium", value: 1 },
+                  { label: "Large", value: 1.4 },
+                  { label: "XL", value: 1.8 },
+                ] as const).map((f) => (
+                  <motion.button
+                    key={f.label}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setFontSize(f.value)}
+                    className={`flex-1 px-3 py-2.5 text-[10px] tracking-[0.1em] uppercase rounded-sm border transition-all duration-200 ${
+                      fontSize === f.value
+                        ? "bg-foreground text-cream border-foreground shadow-sm"
+                        : "bg-transparent text-foreground/60 border-foreground/15 hover:border-foreground/30"
+                    }`}
+                  >
+                    {f.label}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
             {/* Text input */}
             <div>
               <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
-                Your Initials / Text
+                {product === "cap" ? "Your Initials / Text" : `Text — ${activeView}`}
               </label>
               <div className="relative">
                 <input
@@ -227,7 +424,7 @@ export function Customizer() {
                   {text.length}/20 characters
                 </span>
                 {textError && (
-                  <span className="text-[9px] text-red-500">Please add text first</span>
+                  <span className="text-[9px] text-red-500">Please add text on at least one side</span>
                 )}
               </div>
             </div>
@@ -273,36 +470,6 @@ export function Customizer() {
               )}
             </AnimatePresence>
 
-            {/* Symbols */}
-            <div>
-              <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
-                Add Symbol
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {["♡", "♥", "★", "✦", "&", "|", "~", "∞", "☺", "✿", "♪", "→", "•", "☆", "♠", "♣", "☾", "☀", "✈", "♛"].map((symbol) => (
-                  <motion.button
-                    key={symbol}
-                    whileTap={{ scale: 0.85 }}
-                    whileHover={{ scale: 1.08 }}
-                    onClick={() => {
-                      const pos = cursorPosRef.current;
-                      const newText = (text.slice(0, pos) + symbol + text.slice(pos)).slice(0, 20);
-                      setText(newText);
-                      setTextError(false);
-                      const newPos = pos + symbol.length;
-                      cursorPosRef.current = newPos;
-                      setTimeout(() => {
-                        inputRef.current?.focus();
-                        inputRef.current?.setSelectionRange(newPos, newPos);
-                      }, 0);
-                    }}
-                    className="w-10 h-10 flex items-center justify-center text-sm text-foreground/55 border border-foreground/10 rounded-sm hover:border-foreground/25 hover:text-foreground/80 hover:bg-warm/50 transition-all duration-200"
-                  >
-                    {symbol}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
 
             {/* Divider */}
             <div className="border-t border-foreground/8" />
@@ -320,18 +487,42 @@ export function Customizer() {
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                onClick={() => {
-                  if (!text.trim()) {
+                onClick={async () => {
+                  const frontText = productState[product].frontText;
+                  const backText = productState[product].backText;
+                  if (!frontText.trim() && !backText.trim()) {
                     setTextError(true);
                     return;
                   }
                   setTextError(false);
+
+                  // Capture front screenshot
+                  setActiveView("front");
+                  await new Promise((r) => setTimeout(r, 300));
+                  const frontImage = captureScreenshot("front");
+
+                  // Capture back screenshot if back text exists
+                  let backImage: string | undefined;
+                  if (backText.trim() && product !== "cap") {
+                    setActiveView("back");
+                    await new Promise((r) => setTimeout(r, 300));
+                    backImage = captureScreenshot("back");
+                  }
+
+                  setActiveView("front");
+
+                  const printSizeLabel = fontSize === 0.8 ? "Small" : fontSize === 1 ? "Medium" : fontSize === 1.4 ? "Large" : "XL";
+                  const cartText = [frontText, backText].filter(Boolean).join(" / ");
+
                   if (editId) {
-                    updateCartItem(editId, { product, color, text, size, price });
+                    updateCartItem(editId, { product, color, text: cartText, backText, size, price, printSize: printSizeLabel, frontImage, backImage });
                     router.push("/cart");
                   } else {
-                    addToCart({ product, color, text, size, quantity: 1, price });
-                    setText("");
+                    addToCart({ product, color, text: cartText, backText, size, quantity: 1, price, printSize: printSizeLabel, frontImage, backImage });
+                    setProductState((prev) => ({
+                      ...prev,
+                      [product]: { ...prev[product], frontText: "", backText: "" },
+                    }));
                     setToast("Added to cart!");
                     setTimeout(() => setToast(""), 3000);
                   }

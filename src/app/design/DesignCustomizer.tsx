@@ -5,27 +5,18 @@ import { useRouter } from "next/navigation";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Center, Environment } from "@react-three/drei";
 import * as THREE from "three";
-import { Palette, Type, ShoppingCart, ChevronRight, X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Type, ChevronRight, X, ZoomIn, ZoomOut, RotateCcw, Pencil } from "lucide-react";
 import { addToCart } from "@/app/data/cart";
 import type { CustomizerProduct } from "@/app/data/products";
 import { customizerColors, productPrices } from "@/app/data/products";
 
 // ─── Helpers ─────────────────────────────────────────────
 
-function getTextColor(bgHex: string) {
-  const r = parseInt(bgHex.slice(1, 3), 16);
-  const g = parseInt(bgHex.slice(3, 5), 16);
-  const b = parseInt(bgHex.slice(5, 7), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5 ? "#1A1A1A" : "#F5F0E8";
-}
-
 const MODEL_PATHS: Record<CustomizerProduct, string> = {
   cap: "/models/bucket_hat.glb",
   tee: "/models/tee.glb",
   tote: "/models/tote.glb",
 };
-
 
 const PRODUCT_SCALE: Record<CustomizerProduct, number> = {
   cap: 2.2,
@@ -34,6 +25,64 @@ const PRODUCT_SCALE: Record<CustomizerProduct, number> = {
 };
 
 const SIZES = ["S", "M", "L", "XL", "XXL"];
+
+// Thread color — auto contrast based on garment
+function getThreadColor(garmentHex: string) {
+  const r = parseInt(garmentHex.slice(1, 3), 16);
+  const g = parseInt(garmentHex.slice(3, 5), 16);
+  const b = parseInt(garmentHex.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? "#1A1A1A" : "#FFFFFF";
+}
+
+// Font style presets
+const FONT_STYLE_OPTIONS = [
+  { label: "Serif", value: "serif", className: "font-serif italic font-light" },
+  { label: "Sans", value: "sans", className: "font-sans font-semibold tracking-wide" },
+  { label: "Script", value: "script", className: "font-[cursive] font-normal" },
+];
+
+// Fixed font size presets
+const FONT_SIZE_OPTIONS = [
+  { label: "Small", value: 16 },
+  { label: "Medium", value: 24 },
+  { label: "Large", value: 32 },
+  { label: "XL", value: 40 },
+];
+
+// Standard placement positions per product and view
+const PLACEMENT_OPTIONS: Record<string, Record<string, { label: string; x: number; y: number }[]>> = {
+  tee: {
+    front: [
+      { label: "Center Chest", x: 45, y: 0 },
+      { label: "Left Chest", x: 45, y: 30 },
+      { label: "Right Chest", x: 55, y: 30 },
+      { label: "Lower Front", x: 50, y: 55 },
+    ],
+    back: [
+      { label: "Upper Back", x: 50, y: 28 },
+      { label: "Center Back", x: 50, y: 42 },
+    ],
+  },
+  tote: {
+    front: [
+      { label: "Top Center", x: 50, y: 30 },
+      { label: "Center", x: 50, y: 45 },
+      { label: "Bottom Center", x: 50, y: 60 },
+    ],
+    back: [
+      { label: "Top Center", x: 50, y: 30 },
+      { label: "Center", x: 50, y: 45 },
+      { label: "Bottom Center", x: 50, y: 60 },
+    ],
+  },
+  cap: {
+    front: [
+      { label: "Front Center", x: 50, y: 40 },
+    ],
+    back: [],
+  },
+};
 
 // ─── 3D Components ──────────────────────────────────────
 
@@ -59,8 +108,6 @@ function ProductModel({ product, color, viewAngle }: {
     return clone;
   }, [scene, color]);
 
-  // No useFrame rotation — rotation is set directly via the group's rotation prop below
-
   return (
     <group ref={groupRef} scale={PRODUCT_SCALE[product]} rotation={[0, viewAngle, 0]}>
       <Center>
@@ -81,7 +128,6 @@ function LoadingSpinner() {
   );
 }
 
-// Helper to expose the Three.js gl renderer
 function SceneCapture({ onReady }: { onReady: (gl: THREE.WebGLRenderer) => void }) {
   const { gl } = useThree();
   useMemo(() => onReady(gl), [gl, onReady]);
@@ -103,27 +149,45 @@ export default function DesignCustomizer() {
   const [activeView, setActiveView] = useState<"front" | "back">("front");
   const [isAddingText, setIsAddingText] = useState(false);
   const [textInput, setTextInput] = useState("");
-  const [showColors, setShowColors] = useState(false);
+  const [selectedFontSize, setSelectedFontSize] = useState(24);
+  const [selectedFontStyle, setSelectedFontStyle] = useState(FONT_STYLE_OPTIONS[0]);
+  const [selectedPlacement, setSelectedPlacement] = useState(PLACEMENT_OPTIONS.tee.front[0]);
   const [zoom, setZoom] = useState(1);
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
 
-  // Multiple texts per view: { front: [{text, x, y, fontSize}, ...], back: [...] }
-  const [texts, setTexts] = useState<Record<string, { text: string; x: number; y: number; fontSize: number }[]>>({ front: [], back: [] });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  // Texts per view
+  const [texts, setTexts] = useState<Record<string, { text: string; x: number; y: number; fontSize: number; color: string; fontStyle: string; fontClassName: string }[]>>({ front: [], back: [] });
   const viewerRef = useRef<HTMLDivElement>(null);
 
-  const textColor = getTextColor(color);
   const viewAngle = activeView === "front" ? 0 : Math.PI;
   const price = productPrices[product];
   const currentTexts = texts[activeView] || [];
+  const currentPlacements = PLACEMENT_OPTIONS[product]?.[activeView] || [];
+  const threadColor = getThreadColor(color);
+
+  // Reset placement when product or view changes
+  const placementKey = `${product}-${activeView}`;
+  const [lastPlacementKey, setLastPlacementKey] = useState(placementKey);
+  if (placementKey !== lastPlacementKey) {
+    setLastPlacementKey(placementKey);
+    const placements = PLACEMENT_OPTIONS[product]?.[activeView] || [];
+    if (placements.length > 0) setSelectedPlacement(placements[0]);
+  }
 
   // Handlers
   const handleAddText = () => {
     if (textInput.trim()) {
       setTexts((prev) => ({
         ...prev,
-        [activeView]: [...(prev[activeView] || []), { text: textInput.trim().slice(0, 20), x: 50, y: 30 + (prev[activeView]?.length || 0) * 15, fontSize: 24 }],
+        [activeView]: [...(prev[activeView] || []), {
+          text: textInput.trim().slice(0, 20),
+          x: selectedPlacement.x,
+          y: selectedPlacement.y,
+          fontSize: selectedFontSize,
+          color: threadColor,
+          fontStyle: selectedFontStyle.value,
+          fontClassName: selectedFontStyle.className,
+        }],
       }));
       setIsAddingText(false);
       setTextInput("");
@@ -137,50 +201,8 @@ export default function DesignCustomizer() {
     }));
   };
 
-  const handleResizeText = (index: number, delta: number) => {
-    setTexts((prev) => ({
-      ...prev,
-      [activeView]: prev[activeView].map((t, i) =>
-        i === index ? { ...t, fontSize: Math.max(12, Math.min(48, t.fontSize + delta)) } : t
-      ),
-    }));
-  };
-
-  // Drag handlers
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent, index: number) => {
-    e.preventDefault();
-    setIsDragging(true);
-    setDragIndex(index);
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    const rect = viewerRef.current?.getBoundingClientRect();
-    const item = currentTexts[index];
-    if (!rect || !item) return;
-    setDragOffset({
-      x: clientX - (rect.left + (item.x / 100) * rect.width),
-      y: clientY - (rect.top + (item.y / 100) * rect.height),
-    });
-  };
-
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging || dragIndex === null || !viewerRef.current) return;
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    const rect = viewerRef.current.getBoundingClientRect();
-    const x = ((clientX - dragOffset.x - rect.left) / rect.width) * 100;
-    const y = ((clientY - dragOffset.y - rect.top) / rect.height) * 100;
-    setTexts((prev) => ({
-      ...prev,
-      [activeView]: prev[activeView].map((t, i) =>
-        i === dragIndex ? { ...t, x: Math.max(10, Math.min(90, x)), y: Math.max(10, Math.min(90, y)) } : t
-      ),
-    }));
-  };
-
-  const handleDragEnd = () => { setIsDragging(false); setDragIndex(null); };
-
-  // Capture a cropped screenshot of the 3D canvas + text overlays for a given view
-  const captureView = (viewTexts: { text: string; x: number; y: number; fontSize: number }[]): string | undefined => {
+  // Capture screenshot
+  const captureView = (viewTexts: { text: string; x: number; y: number; fontSize: number; color: string; fontStyle: string; fontClassName: string }[]): string | undefined => {
     const gl = glRef.current;
     const viewer = viewerRef.current;
     if (!gl || !viewer) return undefined;
@@ -189,7 +211,6 @@ export default function DesignCustomizer() {
     const width = threeCanvas.width;
     const height = threeCanvas.height;
 
-    // First draw full composite
     const fullCanvas = document.createElement("canvas");
     fullCanvas.width = width;
     fullCanvas.height = height;
@@ -198,19 +219,19 @@ export default function DesignCustomizer() {
 
     fullCtx.drawImage(threeCanvas, 0, 0);
 
-    // Draw text overlays
-    const computedTextColor = getTextColor(color);
     fullCtx.textAlign = "center";
     fullCtx.textBaseline = "middle";
-    fullCtx.fillStyle = computedTextColor;
 
-    // Scale font size from CSS pixels to canvas pixels
     const viewerWidth = viewerRef.current?.clientWidth || width;
     const pixelRatio = width / viewerWidth;
 
     for (const item of viewTexts) {
       const scaledFontSize = item.fontSize * pixelRatio;
-      fullCtx.font = `italic 300 ${scaledFontSize}px serif`;
+      const fontFamily = item.fontStyle === "sans" ? "sans-serif" : item.fontStyle === "script" ? "cursive" : "serif";
+      const fontWeight = item.fontStyle === "sans" ? "600" : "400";
+      const fontItalic = item.fontStyle === "serif" ? "italic " : "";
+      fullCtx.font = `${fontItalic}${fontWeight} ${scaledFontSize}px ${fontFamily}`;
+      fullCtx.fillStyle = item.color;
       const x = (item.x / 100) * width;
       const y = (item.y / 100) * height;
       fullCtx.fillText(item.text, x, y);
@@ -222,12 +243,10 @@ export default function DesignCustomizer() {
   const handleSave = async () => {
     const allText = Object.values(texts).flat().map((t) => t.text).join(" | ");
 
-    // Capture front view
     setActiveView("front");
     await new Promise((r) => setTimeout(r, 300));
     const frontImage = captureView(texts.front || []);
 
-    // Only capture back if there's text on the back
     let backImage: string | undefined;
     if (texts.back && texts.back.length > 0) {
       setActiveView("back");
@@ -260,12 +279,7 @@ export default function DesignCustomizer() {
       {/* ─── CENTER: 3D Product Viewer ─── */}
       <div
         ref={viewerRef}
-        className="flex-1 relative min-h-[400px] lg:min-h-0"
-        onMouseMove={handleDragMove}
-        onMouseUp={handleDragEnd}
-        onMouseLeave={handleDragEnd}
-        onTouchMove={handleDragMove}
-        onTouchEnd={handleDragEnd}
+        className="flex-1 relative min-h-[280px] max-h-[50vh] lg:max-h-none lg:min-h-0 -mb-8 lg:mb-0"
       >
         <Canvas
           camera={{ position: [0, 0.3, 3], fov: 45 }}
@@ -296,7 +310,6 @@ export default function DesignCustomizer() {
             enableRotate={false}
             minPolarAngle={Math.PI / 2.5}
             maxPolarAngle={Math.PI / 1.8}
-            enabled={!isDragging}
           />
         </Canvas>
 
@@ -321,79 +334,50 @@ export default function DesignCustomizer() {
           </div>
         )}
 
-        {/* Live text preview while typing */}
-        {isAddingText && textInput.trim() && (
-          <div
-            className="absolute select-none pointer-events-none"
-            style={{
-              left: "50%",
-              top: `${30 + (currentTexts.length) * 15}%`,
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <span
-              className="font-serif italic font-light px-3 py-1 whitespace-nowrap opacity-70"
-              style={{ color: textColor, fontSize: "24px" }}
-            >
-              {textInput}
-            </span>
-            <div className="absolute inset-0 border border-dashed border-white/40 -m-1 rounded pointer-events-none" />
-          </div>
-        )}
-
-        {/* Draggable text overlays */}
-        {currentTexts.map((item, index) => (
-          <div
-            key={index}
-            className="absolute select-none"
-            style={{
-              left: `${item.x}%`,
-              top: `${item.y}%`,
-              transform: "translate(-50%, -50%)",
-              cursor: isDragging && dragIndex === index ? "grabbing" : "grab",
-            }}
-            onMouseDown={(e) => handleDragStart(e, index)}
-            onTouchStart={(e) => handleDragStart(e, index)}
-          >
-            <div className="relative group">
-              <span
-                className="font-serif italic font-light px-3 py-1 whitespace-nowrap"
-                style={{ color: textColor, fontSize: `${item.fontSize}px` }}
+        {/* Fixed-size print area — stays centered regardless of screen size */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="relative w-[300px] h-[400px]">
+            {/* Live text preview while typing */}
+            {isAddingText && textInput.trim() && (
+              <div
+                className="absolute select-none"
+                style={{
+                  left: `${selectedPlacement.x}%`,
+                  top: `${selectedPlacement.y}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
               >
-                {item.text}
-              </span>
-              <div className="absolute inset-0 border border-dashed border-white/60 -m-1 rounded pointer-events-none group-hover:border-white" />
-              {/* Delete */}
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDeleteText(index); }}
-                className="absolute -top-3 -right-3 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                onMouseDown={(e) => e.stopPropagation()}
-                aria-label="Delete text"
-              >
-                <X size={10} />
-              </button>
-              {/* Resize controls */}
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleResizeText(index, -4); }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  className="w-5 h-5 bg-white rounded shadow text-[10px] font-bold flex items-center justify-center hover:bg-gray-100"
-                  aria-label="Decrease text size"
+                <span
+                  className={`${selectedFontStyle.className} px-3 py-1 whitespace-nowrap opacity-70`}
+                  style={{ color: threadColor, fontSize: `${selectedFontSize}px` }}
                 >
-                  A
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleResizeText(index, 4); }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  className="w-6 h-5 bg-white rounded shadow text-sm font-bold flex items-center justify-center hover:bg-gray-100"
-                  aria-label="Increase text size"
-                >
-                  A
-                </button>
+                  {textInput}
+                </span>
+                <div className="absolute inset-0 border border-dashed border-white/40 -m-1 rounded" />
               </div>
-            </div>
+            )}
+
+            {/* Text overlays */}
+            {currentTexts.map((item, index) => (
+              <div
+                key={index}
+                className="absolute select-none"
+                style={{
+                  left: `${item.x}%`,
+                  top: `${item.y}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <span
+                  className={`${item.fontClassName} px-3 py-1 whitespace-nowrap`}
+                  style={{ color: item.color, fontSize: `${item.fontSize}px` }}
+                >
+                  {item.text}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
 
         {/* Zoom controls */}
         <div className="absolute bottom-4 right-4 flex flex-col gap-1">
@@ -410,10 +394,10 @@ export default function DesignCustomizer() {
       </div>
 
       {/* ─── RIGHT: Action Panel (Desktop) ─── */}
-      <div className="hidden lg:flex flex-col w-[22rem] bg-white/80 backdrop-blur-sm border-l border-gray-200">
-        <div className="flex-1 p-6">
+      <div className="hidden lg:flex flex-col w-[26rem] bg-white/80 backdrop-blur-sm border-l border-gray-200 overflow-y-auto">
+        <div className="flex-1 p-6 space-y-6">
           {/* Product selector */}
-          <div className="mb-6">
+          <div>
             <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Product</label>
             <div className="flex gap-2">
               {(["tee", "cap", "tote"] as CustomizerProduct[]).map((p) => (
@@ -430,23 +414,86 @@ export default function DesignCustomizer() {
             </div>
           </div>
 
-          {/* Color selection */}
-          <div className="mb-4">
-            <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Color</label>
-            <div className="flex gap-2">
+          {/* Garment Color */}
+          <div>
+            <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 block">Garment Color</label>
+            <p className="text-[11px] text-gray-400 mb-2">Choose the base color of your {product === "cap" ? "hat" : product}</p>
+            <div className="flex gap-3">
               {customizerColors.map((c) => (
                 <button
                   key={c.hex}
                   onClick={() => setColor(c.hex)}
-                  className={`w-9 h-9 rounded-full border-2 transition-all ${
-                    color === c.hex ? "border-gray-900 scale-110" : "border-gray-200 hover:scale-105"
-                  }`}
-                  style={{ backgroundColor: c.hex }}
-                  title={c.name}
-                />
+                  className={`flex flex-col items-center gap-1 ${
+                    color === c.hex ? "scale-110" : "hover:scale-105"
+                  } transition-all`}
+                >
+                  <div
+                    className={`w-9 h-9 rounded-full border-2 ${
+                      color === c.hex ? "border-gray-900" : "border-gray-200"
+                    }`}
+                    style={{ backgroundColor: c.hex }}
+                  />
+                  <span className="text-[9px] text-gray-500">{c.name}</span>
+                </button>
               ))}
             </div>
           </div>
+
+          {/* Font Style */}
+          <div>
+            <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Font Style</label>
+            <div className="flex gap-2">
+              {FONT_STYLE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSelectedFontStyle(opt)}
+                  className={`flex-1 py-2 text-xs rounded-lg transition-all ${opt.className} ${
+                    selectedFontStyle.value === opt.value ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Text Size */}
+          <div>
+            <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Text Size</label>
+            <div className="flex gap-2">
+              {FONT_SIZE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSelectedFontSize(opt.value)}
+                  className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${
+                    selectedFontSize === opt.value ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Placement */}
+          {currentPlacements.length > 0 && (
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Placement ({activeView})</label>
+              <div className="grid grid-cols-2 gap-2">
+                {currentPlacements.map((opt) => (
+                  <button
+                    key={opt.label}
+                    onClick={() => setSelectedPlacement(opt)}
+                    className={`py-2 px-3 text-xs font-medium rounded-lg transition-all ${
+                      selectedPlacement.label === opt.label ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Add Text */}
           <button
@@ -459,7 +506,7 @@ export default function DesignCustomizer() {
 
           {/* Text input */}
           {isAddingText && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div className="p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium">Add Text</span>
                 <button onClick={() => setIsAddingText(false)} className="text-gray-400 hover:text-gray-600">
@@ -504,10 +551,13 @@ export default function DesignCustomizer() {
 
           {/* Current texts display */}
           {currentTexts.length > 0 && !isAddingText && (
-            <div className="mt-4 space-y-2">
+            <div className="space-y-2">
               {currentTexts.map((item, index) => (
                 <div key={index} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
-                  <span className="text-sm text-gray-700 italic font-serif">&ldquo;{item.text}&rdquo;</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: item.color }} />
+                    <span className="text-sm text-gray-700 italic font-serif">&ldquo;{item.text}&rdquo;</span>
+                  </div>
                   <button
                     onClick={() => handleDeleteText(index)}
                     className="text-red-400 hover:text-red-600"
@@ -522,7 +572,7 @@ export default function DesignCustomizer() {
 
           {/* Size selector (tee only) */}
           {product === "tee" && (
-            <div className="mt-6">
+            <div>
               <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Size</label>
               <div className="flex gap-2">
                 {SIZES.map((s) => (
@@ -559,100 +609,269 @@ export default function DesignCustomizer() {
         </div>
       </div>
 
-      {/* ─── MOBILE: Bottom Toolbar + CTA ─── */}
+      {/* ─── MOBILE: Bottom Bar + Popup ─── */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
-        {/* Product selector row */}
-        <div className="bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-center gap-2">
-          {(["tee", "cap", "tote"] as CustomizerProduct[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => { setProduct(p); if (p === "cap") setActiveView("front"); }}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all capitalize ${
-                product === p ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              {p === "cap" ? "Hat" : p}
-            </button>
-          ))}
-          {product === "tee" && (
-            <select
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-              className="ml-2 px-2 py-1.5 text-xs bg-gray-100 rounded-full border-none"
-            >
-              {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-          )}
-        </div>
-
-        {/* Action toolbar */}
-        <div className="bg-white border-t border-gray-100 px-4 py-3 flex items-center justify-around">
-          <button
-            onClick={() => { setShowColors(!showColors); setIsAddingText(false); }}
-            className="flex flex-col items-center gap-1"
-          >
-            <Palette size={20} />
-            <span className="text-[10px]">Change Color</span>
-          </button>
-          <button
-            onClick={() => { setIsAddingText(!isAddingText); setShowColors(false); setTextInput(""); }}
-            className="flex flex-col items-center gap-1"
-          >
-            <Type size={20} />
-            <span className="text-[10px]">Add Text</span>
-          </button>
-        </div>
-
-        {/* Mobile color picker */}
-        {showColors && (
-          <div className="bg-white border-t border-gray-100 px-4 py-3 flex gap-4 justify-center">
-            {customizerColors.map((c) => (
-              <button
-                key={c.hex}
-                onClick={() => { setColor(c.hex); setShowColors(false); }}
-                className={`w-11 h-11 rounded-full border-3 transition-all ${
-                  color === c.hex ? "border-blue-500 scale-110" : "border-gray-300"
-                }`}
-                style={{ backgroundColor: c.hex }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Mobile text input */}
-        {isAddingText && (
-          <div className="bg-white border-t border-gray-100 px-4 py-3">
-            <textarea
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value.slice(0, 20))}
-              placeholder="Type your text here.."
-              className="w-full p-3 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
-              rows={2}
-              maxLength={20}
-              autoFocus
-            />
-            <button
-              onClick={handleAddText}
-              disabled={!textInput.trim()}
-              className="w-full mt-2 py-2.5 bg-blue-500 text-white text-sm font-semibold rounded-lg disabled:opacity-40 transition-colors"
-            >
-              Done
-            </button>
-          </div>
-        )}
-
-        {/* CTA bar */}
         <div className="bg-white border-t border-gray-200 px-4 py-3 flex items-center justify-between">
           <span className="text-lg font-bold">&#8377;{price}</span>
-          <button
-            onClick={handleSave}
-            className="px-6 py-2.5 bg-[#1A1A1A] text-[#F5F0E8] font-semibold rounded-full hover:bg-[#333] transition-colors flex items-center gap-2"
-          >
-            Save & Proceed
-            <ChevronRight size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowMobilePanel(true)}
+              className="px-4 py-2.5 bg-gray-100 text-gray-900 font-medium rounded-full flex items-center gap-2 text-sm"
+            >
+              <Pencil size={14} />
+              Customize
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-5 py-2.5 bg-[#1A1A1A] text-[#F5F0E8] font-semibold rounded-full flex items-center gap-2 text-sm"
+            >
+              Save
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* ─── MOBILE: Bottom Sheet (half-screen with live preview above) ─── */}
+      {showMobilePanel && (
+        <>
+          {/* Backdrop — tap to close */}
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/20"
+            onClick={() => setShowMobilePanel(false)}
+          />
+          {/* Bottom sheet */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl max-h-[55vh] flex flex-col shadow-2xl">
+            {/* Handle + Header */}
+            <div className="flex flex-col items-center pt-2 pb-1 border-b border-gray-100">
+              <div className="w-10 h-1 bg-gray-300 rounded-full mb-2" />
+              <div className="flex items-center justify-between w-full px-4 pb-2">
+                <h2 className="text-sm font-semibold">Customize Design</h2>
+                <button
+                  onClick={() => setShowMobilePanel(false)}
+                  className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+              {/* Product selector */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Product</label>
+                <div className="flex gap-2">
+                  {(["tee", "cap", "tote"] as CustomizerProduct[]).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => { setProduct(p); if (p === "cap") setActiveView("front"); }}
+                      className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all capitalize ${
+                        product === p ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                      }`}
+                    >
+                      {p === "cap" ? "Hat" : p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* View Toggle */}
+              {product !== "cap" && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">View</label>
+                  <div className="flex gap-2">
+                    {(["front", "back"] as const).map((view) => (
+                      <button
+                        key={view}
+                        onClick={() => setActiveView(view)}
+                        className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all capitalize ${
+                          activeView === view ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        {view}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Garment Color */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 block">Garment Color</label>
+                <div className="flex gap-3">
+                  {customizerColors.map((c) => (
+                    <button
+                      key={c.hex}
+                      onClick={() => setColor(c.hex)}
+                      className={`flex flex-col items-center gap-1 ${
+                        color === c.hex ? "scale-110" : ""
+                      } transition-all`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-full border-2 ${
+                          color === c.hex ? "border-gray-900" : "border-gray-200"
+                        }`}
+                        style={{ backgroundColor: c.hex }}
+                      />
+                      <span className="text-[9px] text-gray-500">{c.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Font Style */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Font Style</label>
+                <div className="flex gap-2">
+                  {FONT_STYLE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSelectedFontStyle(opt)}
+                      className={`flex-1 py-2 text-xs rounded-lg transition-all ${opt.className} ${
+                        selectedFontStyle.value === opt.value ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Text Size */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Text Size</label>
+                <div className="flex gap-2">
+                  {FONT_SIZE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSelectedFontSize(opt.value)}
+                      className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${
+                        selectedFontSize === opt.value ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Placement */}
+              {currentPlacements.length > 0 && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Placement ({activeView})</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {currentPlacements.map((opt) => (
+                      <button
+                        key={opt.label}
+                        onClick={() => setSelectedPlacement(opt)}
+                        className={`py-2 px-3 text-xs font-medium rounded-lg transition-all ${
+                          selectedPlacement.label === opt.label ? "bg-gray-900 text-white" : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Size selector (tee only) */}
+              {product === "tee" && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Size</label>
+                  <div className="flex gap-2">
+                    {SIZES.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setSize(s)}
+                        className={`w-10 h-10 text-xs font-semibold rounded-full border-2 transition-all ${
+                          size === s
+                            ? "border-blue-500 bg-blue-50 text-blue-600 scale-105 shadow-sm"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add Text */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Text</label>
+                <textarea
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value.slice(0, 20))}
+                  placeholder="Type your text here.."
+                  className="w-full p-3 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  rows={2}
+                  maxLength={20}
+                />
+                <p className="text-[10px] text-gray-400 mt-1 text-right">{textInput.length}/20</p>
+                {/* Symbols */}
+                <div className="mt-2">
+                  <span className="text-[10px] text-gray-500 mb-1 block">Symbols</span>
+                  <div className="flex flex-wrap gap-1">
+                    {["♡", "♥", "★", "✦", "&", "~", "∞", "☺", "✿", "♪", "→", "•", "☆", "☾", "☀", "♛"].map((symbol) => (
+                      <button
+                        key={symbol}
+                        type="button"
+                        onClick={() => setTextInput((prev) => (prev + symbol).slice(0, 20))}
+                        className="w-7 h-7 text-sm bg-white border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
+                      >
+                        {symbol}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={() => { handleAddText(); }}
+                  disabled={!textInput.trim()}
+                  className="w-full mt-3 py-2.5 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  Add Text
+                </button>
+              </div>
+
+              {/* Current texts */}
+              {currentTexts.length > 0 && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 block">Added Texts</label>
+                  <div className="space-y-2">
+                    {currentTexts.map((item, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: item.color }} />
+                          <span className="text-sm text-gray-700 italic font-serif">&ldquo;{item.text}&rdquo;</span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteText(index)}
+                          className="text-red-400 hover:text-red-600"
+                          aria-label="Delete text"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom done button */}
+            <div className="px-4 py-3 border-t border-gray-200">
+              <button
+                onClick={() => setShowMobilePanel(false)}
+                className="w-full py-3 bg-[#1A1A1A] text-[#F5F0E8] font-semibold rounded-xl transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

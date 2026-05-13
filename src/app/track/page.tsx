@@ -204,6 +204,7 @@ export default function TrackPage() {
                   <input
                     type="text"
                     required
+                    autoFocus
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     placeholder="Enter 6-digit OTP"
