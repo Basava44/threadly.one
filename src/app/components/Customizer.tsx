@@ -40,9 +40,17 @@ export function Customizer() {
   const [fontSize, setFontSize] = useState(1);
   const [activeView, setActiveView] = useState<"front" | "back">("front");
   const [textPos, setTextPos] = useState<Record<"front" | "back", { x: number; y: number }>>({
-    front: { x: 50, y: 40 },
-    back: { x: 50, y: 40 },
+    front: { x: 50, y: 50 },
+    back: { x: 50, y: 50 },
   });
+
+  useEffect(() => {
+    if (product === "tote" && window.innerWidth < 768) {
+      setTextPos({ front: { x: 50, y: 55 }, back: { x: 50, y: 55 } });
+    } else {
+      setTextPos({ front: { x: 50, y: 50 }, back: { x: 50, y: 50 } });
+    }
+  }, [product]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -96,7 +104,6 @@ export function Customizer() {
   // Drag handlers for text overlay
   const currentPos = textPos[activeView];
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (product === "cap") return;
     e.preventDefault();
     setIsDragging(true);
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
@@ -244,7 +251,12 @@ export function Customizer() {
               onGlReady={handleGlReady}
             />
             {/* Draggable text overlay (tee & tote only) */}
-            {product !== "cap" && text && (
+            {text && !isDragging && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 bg-foreground/70 text-white text-xs px-3 py-1 rounded-full pointer-events-none">
+                Drag text to reposition
+              </div>
+            )}
+            {text && (
               <div
                 className="absolute select-none z-10"
                 style={{
@@ -263,7 +275,7 @@ export function Customizer() {
                       fontStyle === "script" ? "font-[cursive]" :
                       "font-sans font-semibold tracking-wide"
                     }`}
-                    style={{ color: textColor, fontSize: `${Math.round(16 * fontSize)}px` }}
+                    style={{ color: textColor, fontSize: `${Math.round((product === "cap" ? 12 : 16) * fontSize)}px` }}
                   >
                     {text}
                   </span>
@@ -285,13 +297,13 @@ export function Customizer() {
               <label className="text-[10px] tracking-[0.2em] uppercase text-foreground/55 mb-3 block">
                 Product
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 md:gap-2">
                 {(["tee", "tote", "cap"] as CustomizerProduct[]).map((p) => (
                   <motion.button
                     key={p}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setProduct(p)}
-                    className={`flex-1 px-3 py-2.5 text-[10px] tracking-[0.1em] uppercase rounded-sm border transition-all duration-200 ${
+                    className={`flex-1 px-2 py-1.5 md:px-3 md:py-2.5 text-[9px] md:text-[10px] tracking-[0.1em] uppercase rounded-sm border transition-all duration-200 ${
                       product === p
                         ? "bg-foreground text-cream border-foreground shadow-sm"
                         : "bg-transparent text-foreground/60 border-foreground/15 hover:border-foreground/30"
