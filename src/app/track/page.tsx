@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { Search, Package, Scissors, Truck, CheckCircle2, ArrowLeft, Loader2, Phone, Download } from "lucide-react";
+import { Search, Package, Scissors, Truck, CheckCircle2, ArrowLeft, Loader2, Phone, Download, X } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { supabase } from "@/lib/supabase";
@@ -18,6 +18,8 @@ interface OrderResult {
   date: string;
   price: number;
   quantity: number;
+  front_image_url: string | null;
+  back_image_url: string | null;
 }
 
 const statusSteps: { key: OrderStatus; label: string; icon: React.ReactNode }[] = [
@@ -44,6 +46,7 @@ export default function TrackPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startResendTimer = () => {
@@ -125,6 +128,8 @@ export default function TrackPage() {
         }),
         price: row.price || 0,
         quantity: row.quantity || 1,
+        front_image_url: row.front_image_url || null,
+        back_image_url: row.back_image_url || null,
       }));
       setOrders(mapped);
       setOrder(mapped[0]);
@@ -288,6 +293,35 @@ export default function TrackPage() {
                         <p key={i} className="text-xs text-foreground/65 mb-1">{item}</p>
                       ))}
                     </div>
+                    {(order.front_image_url || order.back_image_url) && (
+                      <div className="border-t border-foreground/8 pt-4 mt-4">
+                        <p className="text-[10px] tracking-[0.15em] uppercase text-foreground/55 mb-3">Design Preview</p>
+                        <div className="flex gap-3">
+                          {order.front_image_url && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div
+                                className="w-20 h-20 rounded border border-foreground/10 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                                onClick={() => setPreviewImage(order.front_image_url)}
+                              >
+                                <img src={order.front_image_url} alt="Front design" className="w-full h-full object-cover" />
+                              </div>
+                              <span className="text-[9px] uppercase tracking-wider text-foreground/40">Front</span>
+                            </div>
+                          )}
+                          {order.back_image_url && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div
+                                className="w-20 h-20 rounded border border-foreground/10 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                                onClick={() => setPreviewImage(order.back_image_url)}
+                              >
+                                <img src={order.back_image_url} alt="Back design" className="w-full h-full object-cover" />
+                              </div>
+                              <span className="text-[9px] uppercase tracking-wider text-foreground/40">Back</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Download Receipt */}
@@ -402,6 +436,38 @@ export default function TrackPage() {
           </motion.div>
         </div>
       </main>
+
+      {/* Image Preview Modal */}
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+            onClick={() => setPreviewImage(null)}
+          >
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+                aria-label="Close preview"
+              >
+                <X size={16} />
+              </button>
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="w-80 h-80 sm:w-[28rem] sm:h-[28rem] rounded-xl shadow-2xl bg-[#E8E8E8] overflow-hidden"
+              >
+                <img src={previewImage} alt="Design preview" className="w-full h-full object-cover scale-[1.15]" />
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Footer />
     </>
   );

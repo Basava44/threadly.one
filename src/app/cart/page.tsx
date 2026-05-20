@@ -163,6 +163,31 @@ export default function CartPage() {
         for (const item of cart) {
           const oid = `TH${Math.floor(1000 + Math.random() * 9000)}`;
           orderIds.push(oid);
+
+          // Upload design screenshots to Supabase Storage
+          let front_image_url: string | null = null;
+          let back_image_url: string | null = null;
+
+          if (item.frontImage) {
+            const blob = await fetch(item.frontImage).then((r) => r.blob());
+            const { data: uploadData } = await supabase.storage
+              .from("designs")
+              .upload(`${oid}_front.png`, blob, { contentType: "image/png", upsert: true });
+            if (uploadData?.path) {
+              front_image_url = supabase.storage.from("designs").getPublicUrl(uploadData.path).data.publicUrl;
+            }
+          }
+
+          if (item.backImage) {
+            const blob = await fetch(item.backImage).then((r) => r.blob());
+            const { data: uploadData } = await supabase.storage
+              .from("designs")
+              .upload(`${oid}_back.png`, blob, { contentType: "image/png", upsert: true });
+            if (uploadData?.path) {
+              back_image_url = supabase.storage.from("designs").getPublicUrl(uploadData.path).data.publicUrl;
+            }
+          }
+
           await supabase.from("orders").insert({
             order_id: oid,
             user_id: user.id,
@@ -179,6 +204,8 @@ export default function CartPage() {
             shipping_address: form.address,
             shipping_city: form.city,
             shipping_pincode: form.pincode,
+            front_image_url,
+            back_image_url,
           });
         }
 

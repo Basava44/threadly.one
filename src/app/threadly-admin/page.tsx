@@ -18,6 +18,8 @@ interface Order {
   shipping_phone: string;
   shipping_city: string;
   created_at: string;
+  front_image_url: string | null;
+  back_image_url: string | null;
 }
 
 const statuses: OrderStatus[] = ["confirmed", "crafting", "shipped", "delivered"];
@@ -30,6 +32,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const getPassword = () => sessionStorage.getItem("threadly_admin_pw") || "";
 
@@ -209,6 +212,7 @@ export default function AdminPage() {
                 <tr className="border-b border-foreground/10">
                   <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Order ID</th>
                   <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Product</th>
+                  <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Design</th>
                   <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Initials</th>
                   <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Customer</th>
                   <th className="text-left py-3 px-2 text-[10px] tracking-[0.1em] uppercase text-foreground/55 font-normal">Phone</th>
@@ -222,6 +226,27 @@ export default function AdminPage() {
                   <tr key={order.order_id} className="border-b border-foreground/5 hover:bg-cream/50 transition-colors">
                     <td className="py-3 px-2 font-mono text-xs">{order.order_id}</td>
                     <td className="py-3 px-2 capitalize">{order.product}</td>
+                    <td className="py-3 px-2">
+                      <div className="flex gap-1">
+                        {order.front_image_url && (
+                          <img
+                            src={order.front_image_url}
+                            alt="Front"
+                            onClick={() => setPreviewImage(order.front_image_url)}
+                            className="w-9 h-9 rounded border border-foreground/10 object-cover cursor-pointer hover:opacity-75 transition-opacity"
+                          />
+                        )}
+                        {order.back_image_url && (
+                          <img
+                            src={order.back_image_url}
+                            alt="Back"
+                            onClick={() => setPreviewImage(order.back_image_url)}
+                            className="w-9 h-9 rounded border border-foreground/10 object-cover cursor-pointer hover:opacity-75 transition-opacity"
+                          />
+                        )}
+                        {!order.front_image_url && !order.back_image_url && <span className="text-foreground/30">—</span>}
+                      </div>
+                    </td>
                     <td className="py-3 px-2">{order.initials || "—"}</td>
                     <td className="py-3 px-2">{order.shipping_name}</td>
                     <td className="py-3 px-2 font-mono text-xs">{order.shipping_phone}</td>
@@ -261,6 +286,21 @@ export default function AdminPage() {
           {filtered.length} order{filtered.length !== 1 ? "s" : ""}
         </p>
       </div>
+
+      {/* Image preview modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <img
+            src={previewImage}
+            alt="Design preview"
+            className="max-w-full max-h-[80vh] rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
