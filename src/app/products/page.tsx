@@ -1,12 +1,15 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ShoppingBag, Truck } from "lucide-react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { Particles } from "@/components/magicui/particles";
+import { addToCart } from "../data/cart";
+import { customizerColors, type CustomizerProduct } from "../data/products";
 
 const products = [
   {
@@ -57,6 +60,62 @@ const products = [
     highlight: "Great Value",
   },
 ];
+
+function QuickAdd({ product }: { product: typeof products[number] }) {
+  const [added, setAdded] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(customizerColors[0].name);
+
+  const handleAdd = () => {
+    addToCart({
+      product: product.slug as CustomizerProduct,
+      color: selectedColor,
+      text: "",
+      size: product.slug === "cap" ? "One Size" : "M",
+      quantity: 1,
+      price: product.price,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-2">
+        {customizerColors.map((c) => (
+          <button
+            key={c.name}
+            onClick={() => setSelectedColor(c.name)}
+            className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
+              selectedColor === c.name ? "border-foreground/60 scale-110" : "border-foreground/15"
+            }`}
+            style={{ backgroundColor: c.hex }}
+            title={c.name}
+          />
+        ))}
+      </div>
+      <button
+        onClick={handleAdd}
+        className={`inline-flex items-center gap-2 px-5 py-3 text-[11px] tracking-[0.15em] uppercase rounded-sm transition-all duration-300 ${
+          added
+            ? "bg-green-800 text-cream"
+            : "bg-foreground/10 text-foreground/70 hover:bg-foreground/15"
+        }`}
+      >
+        {added ? (
+          <>
+            <Check size={14} strokeWidth={2} />
+            Added
+          </>
+        ) : (
+          <>
+            <ShoppingBag size={14} strokeWidth={1.5} />
+            Quick Add
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
 
 export default function ProductsPage() {
   return (
@@ -133,13 +192,22 @@ export default function ProductsPage() {
                   </ul>
                 </div>
 
-                <Link
-                  href={`/customize?product=${product.slug}`}
-                  className="group/btn inline-flex items-center gap-2 px-7 py-3.5 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-all duration-300"
-                >
-                  Customise {product.name}
-                  <ArrowRight size={14} strokeWidth={1.5} className="group-hover/btn:translate-x-1 transition-transform duration-200" />
-                </Link>
+                {/* Delivery estimate */}
+                <div className="flex items-center gap-2 mb-5 text-foreground/45">
+                  <Truck size={14} strokeWidth={1.5} />
+                  <span className="text-[10px] tracking-[0.1em]">Dispatched in 3-5 business days</span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <Link
+                    href={`/customize?product=${product.slug}`}
+                    className="group/btn inline-flex items-center gap-2 px-7 py-3.5 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm hover:bg-accent-dark transition-all duration-300"
+                  >
+                    Customise {product.name}
+                    <ArrowRight size={14} strokeWidth={1.5} className="group-hover/btn:translate-x-1 transition-transform duration-200" />
+                  </Link>
+                  <QuickAdd product={product} />
+                </div>
               </motion.div>
             ))}
           </div>

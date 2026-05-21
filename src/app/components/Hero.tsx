@@ -59,21 +59,26 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.45, ease: "easeOut" }}
-              className="flex flex-wrap gap-4 justify-center lg:justify-start mb-12"
+              className="flex flex-col gap-4 justify-center lg:justify-start mb-12"
             >
-              <Link
-                href="/customize"
-                className="group relative px-8 py-4 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-                <span className="relative">Customise Now</span>
-              </Link>
-              <Link
-                href="/products"
-                className="px-8 py-4 border border-foreground/20 text-foreground/80 text-[11px] tracking-[0.15em] uppercase rounded-sm hover:border-foreground/40 hover:text-foreground transition-all duration-300"
-              >
-                View Products
-              </Link>
+              <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
+                <Link
+                  href="/customize"
+                  className="group relative px-8 py-4 bg-foreground text-cream text-[11px] tracking-[0.15em] uppercase rounded-sm overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
+                  <span className="relative">Customise Now</span>
+                </Link>
+                <Link
+                  href="/products"
+                  className="px-8 py-4 border border-foreground/20 text-foreground/80 text-[11px] tracking-[0.15em] uppercase rounded-sm hover:border-foreground/40 hover:text-foreground transition-all duration-300"
+                >
+                  View Products
+                </Link>
+              </div>
+              <p className="text-[11px] text-foreground/50 tracking-wide text-center lg:text-left">
+                Starting at ₹599 · Free shipping over ₹999
+              </p>
             </motion.div>
 
             <motion.div

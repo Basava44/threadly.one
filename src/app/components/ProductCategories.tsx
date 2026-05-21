@@ -62,8 +62,11 @@ export function ProductCategories() {
                     className="text-foreground/45 group-hover:text-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 hidden sm:block"
                   />
                 </div>
-                <p className="text-[10px] sm:text-xs text-foreground/60 mt-1 mb-3 sm:mb-5">
+                <p className="text-[10px] sm:text-xs text-foreground/60 mt-1 mb-1">
                   Starting at ₹{cat.price}
+                </p>
+                <p className="text-[9px] sm:text-[10px] text-foreground/40 mb-3 sm:mb-5">
+                  Dispatched in 3-5 days
                 </p>
                 <Link
                   href={`/customize?product=${cat.slug === "caps" ? "cap" : cat.slug === "tees" ? "tee" : "tote"}`}
