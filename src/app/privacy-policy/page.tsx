@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import { AnnouncementBar } from "../components/AnnouncementBar";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { PageTransition } from "../components/PageTransition";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Learn how threadly.one collects, uses, and protects your personal information when you use our custom embroidery services.",
+  alternates: { canonical: "https://threadly.one/privacy-policy" },
+};
 
 export default function PrivacyPolicy() {
   return (

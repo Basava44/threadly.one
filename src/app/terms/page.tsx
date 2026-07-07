@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import { AnnouncementBar } from "../components/AnnouncementBar";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { PageTransition } from "../components/PageTransition";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions",
+  description:
+    "Terms and conditions for using threadly.one custom embroidery services, including ordering, payments, and returns.",
+  alternates: { canonical: "https://threadly.one/terms" },
+};
 
 export default function Terms() {
   return (
